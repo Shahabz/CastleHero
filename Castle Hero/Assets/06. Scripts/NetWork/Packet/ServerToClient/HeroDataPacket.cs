@@ -40,6 +40,7 @@
 
     public HeroDataPacket(byte[] data) // 패킷을 데이터로 변환(수신용)
     {
+        m_data = new HeroData();
         HeroDataSerializer serializer = new HeroDataSerializer();
         serializer.SetDeserializedData(data);
         serializer.Deserialize(ref m_data);
@@ -60,5 +61,23 @@
     public int GetPacketId()
     {
         return (int)ServerPacketId.HeroData;
+    }
+}
+
+public class HeroData
+{
+    public byte Id;
+    public byte level;
+
+    public HeroData()
+    {
+        Id = 1;
+        level = 1;
+    }
+
+    public HeroData(int newId, int newLevel)
+    {
+        Id = (byte)newId;
+        level = (byte)newLevel;
     }
 }

@@ -128,7 +128,7 @@ public class HeroLevelData
     public int Level { get { return level; } }
     public int Experience { get { return experience; } }
     public int Attack { get { return attack; } }
-    public int Defense { get { return Defense; } }
+    public int Defense { get { return defense; } }
     public int MagicDefens { get { return magicDefense; } }
     public int Health { get { return health; } }
     public int Mana { get { return mana; } }

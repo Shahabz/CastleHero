@@ -13,11 +13,13 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>5.3.5f1</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -69,17 +71,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\06. Scripts\Database\DataManager.cs" />
+    <Compile Include="Assets\06. Scripts\DataManager.cs" />
     <Compile Include="Assets\06. Scripts\Database\HeroData.cs" />
     <Compile Include="Assets\06. Scripts\Database\HeroDatabase.cs" />
+    <Compile Include="Assets\06. Scripts\Database\InventoryData.cs" />
     <Compile Include="Assets\06. Scripts\GameManager.cs" />
     <Compile Include="Assets\06. Scripts\LoadingManager.cs" />
+    <Compile Include="Assets\06. Scripts\NetWork\DataReceiver.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\NetWorkManager.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ClientToServer\AccountPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\IPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\PacketId.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\BuildingDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\HeroDataPacket.cs" />
+    <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\ItemDataPacket.cs" />
+    <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\ResourceDataPacket.cs" />
+    <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\SkillDataPacket.cs" />
+    <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\UnitDataPacket.cs" />
+    <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\UpgradeDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Serializer\HeaderSerializer.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Serializer\Serializer.cs" />
     <Compile Include="Assets\06. Scripts\UI\Tab.cs" />

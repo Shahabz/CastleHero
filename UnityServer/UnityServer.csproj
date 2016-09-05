@@ -33,7 +33,13 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Paket\HeroDataPacket.cs" />
+    <Compile Include="Paket\Server2Client\BuildingDataPacket.cs" />
+    <Compile Include="Paket\Server2Client\HeroDataPacket.cs" />
+    <Compile Include="Paket\Server2Client\ItemDataPacket.cs" />
+    <Compile Include="Paket\Server2Client\ResourceDataPacket.cs" />
+    <Compile Include="Paket\Server2Client\SkillDataPacket.cs" />
+    <Compile Include="Paket\Server2Client\UnitDataPacket.cs" />
+    <Compile Include="Paket\Server2Client\UpgradeDataPacket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MainClass.cs" />
     <Compile Include="NetWork\DataHandler.cs" />
@@ -42,10 +48,9 @@
     <Compile Include="Serializer\Serializer.cs" />
     <Compile Include="Serializer\HeaderSerializer.cs" />
     <Compile Include="Paket\PacketId.cs" />
-    <Compile Include="Paket\AccountPaket.cs" />
+    <Compile Include="Paket\Client2Server\AccountPaket.cs" />
     <Compile Include="NetWork\DataReceiver.cs" />
     <Compile Include="Paket\IPacket.cs" />
-    <Compile Include="Serializer\AccountSerializer.cs" />
     <Compile Include="Database\UserData.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

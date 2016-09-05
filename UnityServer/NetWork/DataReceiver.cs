@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections;
@@ -11,13 +10,13 @@ public class DataReceiver
     public Hashtable LoginUser;
 	Queue<TcpPacket> msgs;
 
-	object receiveLock;
+	Object receiveLock;
 
     AsyncCallback asyncAcceptCallback;
     AsyncCallback asyncReceiveLengthCallBack;
 	AsyncCallback asyncReceiveDataCallBack;
 
-	public DataReceiver(Queue<TcpPacket> newQueue, IPAddress newAddress, int newPort, object newLock, Hashtable newHashtable)
+	public DataReceiver(Queue<TcpPacket> newQueue, IPAddress newAddress, int newPort, Object newLock, Hashtable newHashtable)
 	{
 		listenSock = new Socket (AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 		listenSock.Bind (new IPEndPoint (newAddress, newPort));
@@ -39,15 +38,14 @@ public class DataReceiver
 		Socket listenSock = (Socket) asyncResult.AsyncState;
 		Socket clientSock = listenSock.EndAccept (asyncResult);
 
-        TcpClient tcpClient = new TcpClient (clientSock);
+        Console.WriteLine(clientSock.RemoteEndPoint.ToString() + " 접속");
 
+        TcpClient tcpClient = new TcpClient (clientSock);
 		LoginUser.Add (tcpClient.client, tcpClient.Id);
 
-		Console.WriteLine(clientSock.RemoteEndPoint.ToString() + " 접속");
+        listenSock.BeginAccept(asyncAcceptCallback, (Object)listenSock);
 
-		AsyncData asyncData = new AsyncData (clientSock);
-
-		listenSock.BeginAccept (asyncAcceptCallback, (Object)listenSock);
+        AsyncData asyncData = new AsyncData (clientSock);
 		clientSock.BeginReceive (asyncData.msg, 0, UnityServer.packetLength, SocketFlags.None, asyncReceiveLengthCallBack, (Object)asyncData);
 	}
 
@@ -67,14 +65,13 @@ public class DataReceiver
 		}
 
         //데이터를 받았을 때
-		if (asyncData.msgSize >= UnityServer.packetLength)
+        if (asyncData.msgSize >= UnityServer.packetLength)
 		{
-            short msgSize = 0;            
+            short msgSize = 0;
 
             try
             {
                 msgSize = BitConverter.ToInt16(asyncData.msg, 0);
-
                 asyncData = new AsyncData(clientSock);
                 clientSock.BeginReceive(asyncData.msg, 0, msgSize + UnityServer.packetId, SocketFlags.None, asyncReceiveDataCallBack, (Object)asyncData);
             }
@@ -107,17 +104,16 @@ public class DataReceiver
 			return;
 		}
 
-		if (asyncData.msgSize >= UnityServer.packetId)
+        if (asyncData.msgSize >= UnityServer.packetId)
 		{
 			Array.Resize (ref asyncData.msg, asyncData.msgSize);
-
             TcpPacket paket = new TcpPacket (asyncData.msg, clientSock);
 
-			lock (receiveLock)
-			{
-				try
-				{
-					msgs.Enqueue (paket);
+            lock (receiveLock)
+            {
+                try
+                {
+                    msgs.Enqueue (paket);
 				}
 				catch
 				{

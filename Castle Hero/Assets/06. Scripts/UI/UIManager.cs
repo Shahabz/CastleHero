@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-
 using System.Collections;
 
 public class UIManager : MonoBehaviour
@@ -18,6 +17,11 @@ public class UIManager : MonoBehaviour
     public GameObject deleteAccountPanel;
     public GameObject lastChoicePanel;
     public GameObject dialog;
+
+    void Awake()
+    {
+        DontDestroyOnLoad(transform.gameObject);
+    }
 
     void Start()
     {
@@ -83,7 +87,15 @@ public class UIManager : MonoBehaviour
     //로그인
     public void OnClickLoginButton()
     {
-        networkManager.Login(loginId.text, loginPw.text);
+        if (loginId.text.Length >= 4 && loginPw.text.Length >= 6)
+        {
+            networkManager.Login(loginId.text, loginPw.text);
+        }
+        else
+        {
+            Debug.Log("아이디 4글자 이상. 비밀번호 6글자 이상");
+        }
+        
     }
 
     //게임종료
@@ -92,11 +104,13 @@ public class UIManager : MonoBehaviour
         Application.Quit();
     }
 
-    public IEnumerator DialogCtrl(float value)
+    public IEnumerator DialogCtrl(float value, string text)
     {
         if (!dialog.activeSelf)
         {
             dialog.SetActive(true);
+
+            dialog.transform.FindChild("Text").GetComponent<Text>().text = text;
 
             yield return new WaitForSeconds(value);
 

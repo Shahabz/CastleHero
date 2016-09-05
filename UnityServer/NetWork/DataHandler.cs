@@ -12,8 +12,8 @@ public class DataHandler
 
 	public Hashtable LoginUser;
 
-	object receiveLock;
-	object sendLock;
+	Object receiveLock;
+	Object sendLock;
 
 	TcpPacket tcpPacket;
     
@@ -23,7 +23,7 @@ public class DataHandler
     public delegate ServerPacketId RecvNotifier(byte[] data);
 	private Dictionary<int, RecvNotifier> m_notifier = new Dictionary<int, RecvNotifier>();
 
-	public DataHandler (Queue<TcpPacket> receiveQueue, Queue<TcpPacket> sendQueue, object newReceiveLock, object newSendLock, Hashtable newHashtable)
+	public DataHandler (Queue<TcpPacket> receiveQueue, Queue<TcpPacket> sendQueue, Object newReceiveLock, Object newSendLock, Hashtable newHashtable)
 	{
 		database = new Database ();
 		receiveMsgs = receiveQueue;
@@ -36,8 +36,15 @@ public class DataHandler
 		m_notifier.Add((int) ClientPacketId.Delete, DeleteAccount);
 		m_notifier.Add((int) ClientPacketId.Login, Login);
 		m_notifier.Add((int) ClientPacketId.Logout, Logout);
-		m_notifier.Add((int) ClientPacketId.GameClose, GameClose);
-
+        m_notifier.Add((int) ClientPacketId.GameClose, GameClose);
+        m_notifier.Add((int) ClientPacketId.HeroDataRequest, HeroDataRequest);
+        m_notifier.Add((int) ClientPacketId.ItemDataRequest, ItemDataRequest);
+        m_notifier.Add((int) ClientPacketId.SkillDataRequest, SkillDataRequest);
+        m_notifier.Add((int) ClientPacketId.UnitDataRequest, UnitDataRequest);
+        m_notifier.Add((int) ClientPacketId.BuildingDataRequest, BuildingDataRequest);
+        m_notifier.Add((int) ClientPacketId.UpgradeDataRequest, UpgradeDataRequest);
+        m_notifier.Add((int) ClientPacketId.ResourceDataRequest, ResourceDataRequest);
+        
         Thread handleThread = new Thread(new ThreadStart(DataHandle));
         handleThread.Start();
     }
@@ -49,7 +56,10 @@ public class DataHandler
             if (receiveMsgs.Count != 0)
             {
                 //패킷을 Dequeue 한다 패킷 : 메시지 타입 + 메시지 내용
-                tcpPacket = receiveMsgs.Dequeue();
+                lock (receiveLock)
+                {
+                    tcpPacket = receiveMsgs.Dequeue();
+                }
 
                 //타입과 내용을 분리한다
                 byte Id = tcpPacket.msg[0];
@@ -61,18 +71,19 @@ public class DataHandler
                 //Dictionary에 등록된 델리게이트형 메소드에서 msg를 반환받는다.
                 if (m_notifier.TryGetValue(Id, out recvNotifier))
                 {
+                    ServerPacketId packetId = recvNotifier(msg);
                     //send 할 id를 반환받음
-                    if (recvNotifier(msg) == ServerPacketId.None)
-                        return;
+                    if (packetId != ServerPacketId.None)
+                    {
+                        tcpPacket = new TcpPacket(msg, tcpPacket.client);
+                        sendMsgs.Enqueue(tcpPacket);
+                    }
                 }
                 else
                 {
                     Console.WriteLine("DataHandler::TryGetValue 에러 " + Id);
-                    headerData.Id = (byte)ServerPacketId.None;
-                }
-
-                tcpPacket = new TcpPacket(msg, tcpPacket.client);
-                sendMsgs.Enqueue(tcpPacket);
+                    headerData.Id = (byte)ServerPacketId.None;                    
+                }                
             }
         }
 	}
@@ -86,10 +97,8 @@ public class DataHandler
 
 		Console.WriteLine ("아이디 : " + accountData.Id + "패스워드 : " + accountData.password);
 
-        msg = new byte[1024];
-
-		try
-		{
+		//try
+		//{
 			if (database.AddUserData (accountData.Id, accountData.password))
 			{
                 msg[0] = (byte) UnityServer.Result.Success;
@@ -100,15 +109,16 @@ public class DataHandler
                 msg[0] = (byte)UnityServer.Result.Fail;
                 Console.WriteLine("가입 실패");
             }
-		}
-		catch
-		{
-			Console.WriteLine ("DataHandler::AddPlayerData 에러");
-            Console.WriteLine("가입 실패");
-            msg[0] = (byte)UnityServer.Result.Fail;
-        }
+		//}
+		//catch
+		//{
+		//	Console.WriteLine ("DataHandler::AddPlayerData 에러");
+  //          Console.WriteLine("가입 실패");
+  //          msg[0] = (byte)UnityServer.Result.Fail;
+  //      }
 
         Array.Resize(ref msg, 1);
+        msg = CreateResultPacket(msg, ServerPacketId.CreateResult);
 
         return ServerPacketId.CreateResult;
 	}
@@ -143,6 +153,7 @@ public class DataHandler
         }
 
         Array.Resize(ref msg, 1);
+        msg = CreateResultPacket(msg, ServerPacketId.DeleteResult);
 
         return ServerPacketId.DeleteResult;
 	}
@@ -156,42 +167,45 @@ public class DataHandler
 
 		Console.WriteLine ("아이디 : " + accountData.Id + "비밀번호 : " + accountData.password);
 
-		try
-		{
-			if (database.UserData.ContainsKey (accountData.Id))
-			{
-				if (((UserData)database.UserData[accountData.Id]).PW == accountData.password)
-				{
-					if(!LoginUser.ContainsValue(accountData.Id))
-					{
+        try
+        {
+            if (database.UserData.Contains(accountData.Id))
+            {
+                if (((UserData)database.UserData[accountData.Id]).PW == accountData.password)
+                {
+                    if (!LoginUser.ContainsValue(accountData.Id))
+                    {
                         msg[0] = (byte)UnityServer.Result.Success;
-                        Console.WriteLine ("로그인 성공");
-						((TcpClient)LoginUser[tcpPacket.client]).Id = accountData.Id;
-					}
-					else
-					{
-						Console.WriteLine ("현재 접속중인 아이디입니다.");
+                        Console.WriteLine("로그인 성공");
+                        LoginUser[tcpPacket.client] = accountData.Id;
+                    }
+                    else
+                    {
+                        Console.WriteLine("현재 접속중인 아이디입니다.");
                         msg[0] = (byte)UnityServer.Result.Fail;
                     }
-				}
-				else
-				{
-					Console.WriteLine ("패스워드가 맞지 않습니다.");
+                }
+                else
+                {
+                    Console.WriteLine("패스워드가 맞지 않습니다.");
                     msg[0] = (byte)UnityServer.Result.Fail;
                 }
-			}
-			else
-			{
-				Console.WriteLine ("존재하지 않는 아이디입니다.");
+            }
+            else
+            {
+                Console.WriteLine("존재하지 않는 아이디입니다.");
                 msg[0] = (byte)UnityServer.Result.Fail;
             }
-		}
-		catch
-		{
-			Console.WriteLine ("DataHandler::PlayerData.Contains 에러");
+        }
+        catch
+        {
+            Console.WriteLine("DataHandler::PlayerData.Contains 에러");
             msg[0] = (byte)UnityServer.Result.Fail;
         }
+
         Array.Resize(ref msg, 1);
+
+        msg = CreateResultPacket(msg, ServerPacketId.LoginResult);
 
         return ServerPacketId.LoginResult;
 	}
@@ -200,7 +214,7 @@ public class DataHandler
 	{
 		Console.WriteLine (tcpPacket.client.RemoteEndPoint.ToString() + " 로그아웃요청");
 
-		string id = ((TcpClient)LoginUser[tcpPacket.client]).Id;
+		string id = (string)LoginUser[tcpPacket.client];
 
 		try
 		{
@@ -224,15 +238,19 @@ public class DataHandler
 
         Array.Resize(ref msg, 1);
 
+        msg = CreateResultPacket(msg, ServerPacketId.LoginResult);
+
         return ServerPacketId.None;
 	}
 
 	public ServerPacketId GameClose (byte[] data)
 	{
-		try
+        Console.WriteLine("게임종료");
+
+        try
 		{
             Console.WriteLine(tcpPacket.client.RemoteEndPoint.ToString() + "가 접속을 종료했습니다.");
-            tcpPacket.client.Close();			
+            tcpPacket.client.Close();
 		}
 		catch
 		{
@@ -242,18 +260,98 @@ public class DataHandler
 		return ServerPacketId.None;
 	}
 
-    public ServerPacketId RequestHeroData(byte[] data)
+    public ServerPacketId HeroDataRequest(byte[] data)
     {
-        string Id = ((TcpClient)LoginUser[tcpPacket.client]).Id;
+        string Id = (string)LoginUser[tcpPacket.client];
         int heroId = ((UserData)database.UserData[Id]).HeroId;
         int level = ((UserData)database.UserData[Id]).HeroLevel;
 
         HeroData heroData = new HeroData(heroId, level);
         HeroDataPacket heroDataPacket = new HeroDataPacket(heroData);
 
-        msg = CreatePacket(heroDataPacket, ServerPacketId.HeroData);        
+        msg = CreatePacket(heroDataPacket, ServerPacketId.HeroData);
 
         return ServerPacketId.HeroData;
+    }
+
+    public ServerPacketId ItemDataRequest(byte[] data)
+    {
+        string Id = (string)LoginUser[tcpPacket.client];
+        Item[] equipment = ((UserData)database.UserData[Id]).Equipment;
+        Item[] inventory = ((UserData)database.UserData[Id]).Inventory;
+
+        ItemData itemData = new ItemData(equipment, inventory);
+        ItemDataPacket itemDataPacket = new ItemDataPacket(itemData);
+
+        msg = CreatePacket(itemDataPacket, ServerPacketId.ItemData);
+
+        return ServerPacketId.ItemData;
+    }
+
+    public ServerPacketId SkillDataRequest(byte[] data)
+    {
+        string Id = (string)LoginUser[tcpPacket.client];
+        int[] skill = ((UserData)database.UserData[Id]).Skill;
+
+        SkillData skillData = new SkillData(skill);
+        SkillDataPacket skillDataPacket = new SkillDataPacket(skillData);
+
+        msg = CreatePacket(skillDataPacket, ServerPacketId.SkillData);
+
+        return ServerPacketId.SkillData;
+    }
+
+    public ServerPacketId UnitDataRequest(byte[] data)
+    {
+        string Id = (string)LoginUser[tcpPacket.client];
+        int unitKind = ((UserData)database.UserData[Id]).UnitKind;
+        Unit[] unit = ((UserData)database.UserData[Id]).Unit;
+
+        UnitData unitData = new UnitData();
+        UnitDataPacket unitDataPacket = new UnitDataPacket(unitData);
+
+        msg = CreatePacket(unitDataPacket, ServerPacketId.UnitData);
+
+        return ServerPacketId.UnitData;
+    }
+
+    public ServerPacketId BuildingDataRequest(byte[] data)
+    {
+        string Id = (string)LoginUser[tcpPacket.client];
+        int[] building = ((UserData)database.UserData[Id]).Skill;
+
+        BuildingData buildingData = new BuildingData(building);
+        BuildingDataPacket buildingDataPacket = new BuildingDataPacket(buildingData);
+
+        msg = CreatePacket(buildingDataPacket, ServerPacketId.BuildingData);
+
+        return ServerPacketId.SkillData;
+    }
+
+    public ServerPacketId UpgradeDataRequest(byte[] data)
+    {
+        string Id = (string)LoginUser[tcpPacket.client];
+        int[] upgrade = ((UserData)database.UserData[Id]).Upgrade;
+
+        UpgradeData upgradeData = new UpgradeData(upgrade);
+        UpgradeDataPacket upgradeDataPacket = new UpgradeDataPacket(upgradeData);
+
+        msg = CreatePacket(upgradeDataPacket, ServerPacketId.UpgradeData);
+
+        return ServerPacketId.UpgradeData;
+    }
+
+    public ServerPacketId ResourceDataRequest(byte[] data)
+    {
+        string Id = (string)LoginUser[tcpPacket.client];
+        int resource = ((UserData)database.UserData[Id]).Resource;
+
+        ResourceData resourceData = new ResourceData(resource);
+        ResourceDataPacket resourceDataPacket = new ResourceDataPacket(resourceData);
+
+        msg = CreatePacket(resourceDataPacket, ServerPacketId.ResourceData);
+
+        return ServerPacketId.ResourceData;
     }
 
     byte[] CreateHeader<T>(IPacket<T> data, ServerPacketId Id)
@@ -279,6 +377,18 @@ public class DataHandler
         byte[] packet = CombineByte(header, msg);
 
         return packet;
+    }
+
+    byte[] CreateResultPacket(byte[] msg, ServerPacketId Id)
+    {
+        HeaderData headerData = new HeaderData();
+        HeaderSerializer HeaderSerializer = new HeaderSerializer();
+
+        headerData.Id = (byte)Id;
+        headerData.length = (short)msg.Length;
+        HeaderSerializer.Serialize(headerData);
+        msg = CombineByte(HeaderSerializer.GetSerializedData(), msg);
+        return msg;
     }
 
     public static byte[] CombineByte (byte[] array1, byte[] array2)
@@ -307,4 +417,11 @@ public class TcpClient
 		client = newClient;
 		Id = "";
 	}
+}
+
+public class HeaderData
+{
+    // 헤더 == [2바이트 - 패킷길이][1바이트 - ID]
+    public short length; // 패킷의 길이
+    public byte Id; // 패킷 ID
 }

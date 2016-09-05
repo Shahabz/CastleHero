@@ -10,9 +10,9 @@ public class DataSender
     Socket client;
     byte[] msg;
 
-    object sendLock;
+    Object sendLock;
 
-    public DataSender(Queue<TcpPacket> newQueue, object newSendLock)
+    public DataSender(Queue<TcpPacket> newQueue, Object newSendLock)
     {
         msgs = newQueue;
         sendLock = newSendLock;
@@ -24,13 +24,15 @@ public class DataSender
     public void DataSend()
     {
         while (true)
-        {
+        {            
             if (msgs.Count != 0)
             {
                 lock (sendLock)
                 {
                     tcpPacket = msgs.Dequeue();
                 }
+
+                Console.WriteLine("보낸메시지 길이 :" + tcpPacket.msg.Length);
 
                 try
                 {

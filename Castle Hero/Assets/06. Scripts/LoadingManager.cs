@@ -5,28 +5,17 @@ using UnityEngine.SceneManagement;
 
 public class LoadingManager : MonoBehaviour
 {
-    public enum Scene
-    {
-        Wait,
-        Battle,
-    }
-
     public const int waitData = 7;
 
-    bool[] dataCheck;
-    bool loadFinished;
+    public bool[] dataCheck;
+    [SerializeField] bool loadFinished;
 
     NetWorkManager networkManager;
 
-    public delegate void RecvNotifier();
-    private Dictionary<int, RecvNotifier> m_notifier = new Dictionary<int, RecvNotifier>();
-
     void Awake()
     {
-        networkManager = GameObject.FindGameObjectWithTag("NetWorkManager").GetComponent<NetWorkManager>();
+        networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetWorkManager>();
         DontDestroyOnLoad(transform.gameObject);
-
-        m_notifier.Add((int)Scene.Wait, LoadWaitScene);
     }
 
     void Start()
@@ -44,35 +33,112 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
-    public IEnumerator DataCheck()
+    public IEnumerator DataCheck(GameManager.Scene scene)
     {
-        yield return null;
-        for (int i = 0; i < waitData; i++)
+        while (true)
         {
-            if(dataCheck[i] != false)
-            {
+            yield return new WaitForSeconds(1f);
 
+            for (int i = 0; i < waitData; i++)
+            {
+                if (dataCheck[i])
+                {
+                    loadFinished = true;
+                }
+                else
+                {
+                    loadFinished = false;
+                    yield return null;
+                }
+            }
+
+            if (loadFinished)
+            {
+                StopAllCoroutines();
+                StartCoroutine(LoadScene(scene, 1.0f));
             }
         }
-
-        loadFinished = true;
     }
 
     public void LoadWaitScene()
     {
-        networkManager.DataRequest(ClientPacketId.HeroDataRequest);
-        networkManager.DataRequest(ClientPacketId.SkillDataRequest);
-        networkManager.DataRequest(ClientPacketId.ItemDataRequest);
-        networkManager.DataRequest(ClientPacketId.UnitDataRequest);
-        networkManager.DataRequest(ClientPacketId.ResourceDataRequest);
-        networkManager.DataRequest(ClientPacketId.BuildingDataRequest);
-        networkManager.DataRequest(ClientPacketId.UpgradeDataRequest);
+        StartCoroutine(loadHeroData());
+        StartCoroutine(loadSkillData());
+        StartCoroutine(loadItemData());
+        StartCoroutine(loadUnitData());
+        StartCoroutine(loadBuildingData());
+        StartCoroutine(loadUpgradeData());
+        StartCoroutine(loadResourceData());
+        StartCoroutine(DataCheck(GameManager.Scene.Wait));
     }
 
-    public IEnumerator LoadScene(int index, float delayTime, Scene scene)
+    public IEnumerator loadHeroData()
+    {
+        while (!dataCheck[(int) ServerPacketId.HeroData - 4])
+        {
+            networkManager.DataRequest(ClientPacketId.HeroDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public IEnumerator loadSkillData()
+    {
+        while (!dataCheck[(int)ServerPacketId.SkillData - 4])
+        {
+            networkManager.DataRequest(ClientPacketId.SkillDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public IEnumerator loadItemData()
+    {
+        while (!dataCheck[(int)ServerPacketId.ItemData - 4])
+        {
+            networkManager.DataRequest(ClientPacketId.ItemDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public IEnumerator loadUnitData()
+    {
+        while (!dataCheck[(int)ServerPacketId.UnitData - 4])
+        {
+            networkManager.DataRequest(ClientPacketId.UnitDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public IEnumerator loadBuildingData()
+    {
+        while (!dataCheck[(int)ServerPacketId.BuildingData - 4])
+        {
+            networkManager.DataRequest(ClientPacketId.BuildingDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public IEnumerator loadUpgradeData()
+    {
+        while (!dataCheck[(int)ServerPacketId.UpgradeData - 4])
+        {
+            networkManager.DataRequest(ClientPacketId.UpgradeDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public IEnumerator loadResourceData()
+    {
+        while (!dataCheck[(int)ServerPacketId.ResourceData - 4])
+        {
+            networkManager.DataRequest(ClientPacketId.ResourceDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public IEnumerator LoadScene(GameManager.Scene scene, float delayTime)
     {
         yield return new WaitForSeconds(delayTime);
-        SceneManager.LoadScene(index);
-        m_notifier[(int)Scene.Wait]();
+        SceneManager.LoadScene((int) scene);
+        LoadWaitScene();
     }
 }

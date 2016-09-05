@@ -6,9 +6,9 @@
         {
             bool ret = true;
 
-            for(int i =0; i< BuildingData.buildingMaxNum; i++)
+            for(int i =0; i< DataManager.buildingNum; i++)
             {
-                ret &= Serialize(data.buildingLevel[i]);
+                ret &= Serialize(data.building[i]);
             }
 
             return ret;
@@ -23,12 +23,12 @@
             }
 
             bool ret = true;
-            short level = 0;
+            byte building = 0;
 
-            for(int i=0; i< BuildingData.buildingMaxNum; i++)
+            for(int i=0; i< DataManager.buildingNum; i++)
             {
-                ret &= Deserialize(ref level);
-                element.buildingLevel[i] = level;
+                ret &= Deserialize(ref building);
+                element.building[i] = building;
             }
 
             return ret;
@@ -44,6 +44,7 @@
 
     public BuildingDataPacket(byte[] data) // 패킷을 데이터로 변환(수신용)
     {
+        m_data = new BuildingData();
         BuildingDataSerializer serializer = new BuildingDataSerializer();
         serializer.SetDeserializedData(data);
         serializer.Deserialize(ref m_data);
@@ -64,5 +65,27 @@
     public int GetPacketId()
     {
         return (int)ServerPacketId.BuildingData;
+    }
+}
+
+public class BuildingData
+{
+    public byte[] building;
+
+    public BuildingData()
+    {
+        building = new byte[DataManager.buildingNum];
+
+        for (int i = 0; i < DataManager.buildingNum; i++) { building[i] = 0; }
+    }
+
+    public BuildingData(int[] newBuilding)
+    {
+        building = new byte[DataManager.buildingNum];
+
+        for (int i = 0; i < DataManager.buildingNum; i++)
+        {
+            building[i] = (byte)newBuilding[i];
+        }
     }
 }

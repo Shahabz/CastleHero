@@ -62,3 +62,21 @@
         return (int)ServerPacketId.HeroData;
     }
 }
+
+public class HeroData
+{
+    public byte Id;
+    public byte level;
+
+    public HeroData()
+    {
+        Id = 1;
+        level = 1;
+    }
+
+    public HeroData(int newId, int newLevel)
+    {
+        Id = (byte)newId;
+        level = (byte)newLevel;
+    }
+}

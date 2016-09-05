@@ -2,6 +2,7 @@
 
 public enum UnitID
 {
+    None,
     Unity,
 
 }
@@ -25,6 +26,7 @@ public class HeroDatabase
     {
         HeroData = new List<HeroBaseData>();
 
+        HeroData.Add(new HeroBaseData((int)UnitID.None, 1.0f, 1.0f));
         HeroData.Add(new HeroBaseData((int)UnitID.Unity, 1.0f, 1.0f));
         HeroData[(int)UnitID.Unity].AddLevelData(new HeroLevelData(1, 100, 5, 0, 0, 40, 5, 5, 0.8f, 1, 0, 0));
         HeroData[(int)UnitID.Unity].AddLevelData(new HeroLevelData(2, 200, 7, 0, 0, 45, 7, 5, 0.85f, 1, 0, 0));

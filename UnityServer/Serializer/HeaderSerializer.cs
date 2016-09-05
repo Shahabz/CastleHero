@@ -1,6 +1,5 @@
-﻿using System.Collections;
-
-public class HeaderSerializer : Serializer{
+﻿public class HeaderSerializer : Serializer
+{
 
 	public bool Serialize(HeaderData data)
 	{

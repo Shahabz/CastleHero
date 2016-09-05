@@ -66,3 +66,21 @@
         return (int)ClientPacketId.Create;
     }
 }
+
+public class AccountData
+{
+    public string Id;
+    public string Pw;
+
+    public AccountData()
+    {
+        Id = "";
+        Pw = "";
+    }
+
+    public AccountData(string newId, string newPw)
+    {
+        Id = newId;
+        Pw = newPw;
+    }
+}

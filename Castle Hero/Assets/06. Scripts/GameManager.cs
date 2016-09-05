@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
@@ -13,13 +12,22 @@ public class GameManager : MonoBehaviour
 
     NetWorkManager networkManager;
     UIManager uiManager;
-    DataManager dataManager;
 
     void Awake()
     {
         networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetWorkManager>();
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         DontDestroyOnLoad(transform.gameObject);
+    }
+
+    void FixedUpdate()
+    {
+        networkManager.DataHandle();
+    }
+
+    void LateUpdate()
+    {
+        networkManager.DataSend();
     }
 
     void OnApplicationQuit()

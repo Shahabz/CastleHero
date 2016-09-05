@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 public enum CastleState
 {
@@ -19,24 +15,50 @@ public class UserData
     string Pw;
     int heroId;
     int heroLevel;
-    Item[] equipments;
-    Item[] items;
+    Item[] equipment;
+    Item[] inventory;
+    int[] skill;
+    int unitKind;
+    Unit[] unit;
+    int[] createUnit;
+    int[] attackUnit;
+    int[] building;
+    int buildBuilding;
+    int[] upgrade;
     int resource;
     int castleState;
-    int[] buildings;
-    int buildBuilding;
-    Unit[] units;
-    Unit[] createUnits;
-    Unit[] attackUnits;
 
     public string ID { get { return Id; } }
     public string PW { get { return Pw; } }
     public int HeroId { get { return heroId; } }
     public int HeroLevel { get { return heroLevel; } }
+    public Item[] Equipment { get { return equipment; } }
+    public Item[] Inventory { get { return inventory; } }
+    public Unit[] Unit { get { return unit; } }
+    public int UnitKind
+    {
+        get
+        {
+            unitKind = 0;
+
+            for (int i = 0; i < unitNum; i++)
+            {
+                if (unit[i].num != 0)
+                    unitKind++;
+            }
+            return unitKind;
+        }
+    }
+    public int[] Skill { get { return skill; } }
+    public int[] Building { get { return building; } }
+    public int[] Upgrade { get { return upgrade; } }
+    public int Resource { get { return resource; } }
 
     public const int equipNum = 7;
-    public const int buildingNum = 6;
-    public const int unitNum = 4;
+    public const int invenNum = 16;
+    public const int skillNum = 15;
+    public const int unitNum = 5;
+    public const int buildingNum = 7;
 
     public UserData(string newId, string newPw)
     {
@@ -44,16 +66,25 @@ public class UserData
         Pw = newPw;
         heroId = 1;
         heroLevel = 1;
-        equipments = new Item[equipNum];
-        items = new Item[16];
-        resource = 0;
-        castleState = (int) CastleState.Peace;
-        buildings = new int[buildingNum];
+        equipment = new Item[equipNum];
+        inventory = new Item[invenNum];
+        skill = new int[skillNum];
+        unit = new Unit[unitNum];
+        createUnit = new int[unitNum];
+        attackUnit = new int[unitNum];
+        building = new int[buildingNum];
         buildBuilding = 0;
-        units = new Unit[unitNum];
-        createUnits = new Unit[unitNum];
-        attackUnits = new Unit[unitNum];
-    }
+        upgrade = new int[unitNum];
+        resource = 0;
+        castleState = (int)CastleState.Peace;
+
+        for (int i = 0; i < equipNum; i++) { equipment[i] = new Item(0, 0); }
+        for (int i = 0; i < invenNum; i++) { inventory[i] = new Item(0, 0); }
+        for (int i = 0; i < skillNum; i++) { skill[i] = 0; }
+        for (int i = 0; i < unitNum; i++) { unit[i] = new Unit(0, 0); }
+        for (int i = 0; i < buildingNum; i++) { building[i] = 0; }
+        for (int i = 0; i < unitNum; i++) { upgrade[i] = 0; }
+}
 
     //레벨 변경
     public void SetLevel(int newLevel)
@@ -65,19 +96,66 @@ public class UserData
     //장비 장착
     public void Equip(int itemId, int type)
     {
-        equipments[type].Id = itemId;
+        equipment[type].Id = (byte) itemId;
     }
 
     //장비 해제
     public void UnEquip(int index)
     {
-        equipments[index].Id = 0;
+        equipment[index].Id = 0;
     }
 
-    //아이템 획득, 버리기
-    public void AddItem(int itemId, int index)
+    //아이템 획득
+    public void AddItem(int Id)
     {
-        items[index].Id = itemId;
+        int index = FindSlotWithId(Id);
+
+        if(index != -1)
+        {
+            inventory[index].num++;
+        }
+        else
+        {
+            index = FindEmptySlot();
+
+            if (index != -1)
+            {
+                inventory[index].Id = (byte) Id;
+                inventory[index].num ++;
+            }
+        }
+    }
+
+    //아이템 빼기
+    public void AbstractItem(int index)
+    {
+        if(index != 0)
+            inventory[index].Id --;
+    }
+
+    public int FindEmptySlot()
+    {
+        for (int i = 0; i < invenNum; i++)
+        {
+            if(inventory[i].Id == 0)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int FindSlotWithId(int Id)
+    {
+        for(int i =0; i< invenNum; i++)
+        {
+            if(inventory[i].Id == Id)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     //자원 사용
@@ -93,49 +171,9 @@ public class UserData
     }
 
     //유닛숫자변경
-    public void AddUnit(Unit unit)
+    public void AddUnit(int unitId, int unitNum)
     {
-        int index = FindUnit(unit);
-
-        if (index != -1)
-        {
-            units[index].num += unit.num;
-        }
-        else
-        {
-            index = FindEmptyUnitSlot();
-
-            if (index != -1)
-            {
-                units[index].num = unit.num;
-            }
-        }
-    }
-
-    public int FindUnit(Unit unit)
-    {
-        for (int i = 0; i < units.Length; i++)
-        {
-            if (units[i].Id == unit.Id)
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    public int FindEmptyUnitSlot()
-    {
-        for (int i = 0; i < units.Length; i++)
-        {
-            if (units[i].Id == 0)
-            {
-                return i;
-            }
-        }
-
-        return -1;
+        unit[unitId - 1].num += (byte) unitNum;
     }
 
     //유닛생산, 취소
@@ -144,15 +182,20 @@ public class UserData
 }
 
 [Serializable]
-public struct Unit
+public class Item
 {
-    public int Id;
-    public int num;
-}
+    public byte Id;
+    public byte num;
 
-[Serializable]
-public struct Item
-{
-    public int Id;
-    public int type;
+    public Item()
+    {
+        Id = 0;
+        num = 0;
+    }
+
+    public Item(int newId, int newNum)
+    {
+        Id = (byte) newId;
+        num = (byte) newNum;
+    }
 }
