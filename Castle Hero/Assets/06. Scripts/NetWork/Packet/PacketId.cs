@@ -26,6 +26,7 @@ public enum ClientPacketId
     BuildingDataRequest,
     UpgradeDataRequest,
     ResourceDataRequest,
+    StateDataRequest,
 }
 
 public enum ServerPacketId
@@ -41,4 +42,5 @@ public enum ServerPacketId
     BuildingData,
     UpgradeData,
     ResourceData,
+    StateData,
 }

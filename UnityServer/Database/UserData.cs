@@ -2,10 +2,18 @@
 
 public enum CastleState
 {
-    Peace = 1,
+    Peace = 0,
     Famine,
     Attacked,
     BeingAttacked
+}
+
+public enum HeroState
+{
+    Stationed = 0,
+    Attack,
+    Return,
+    Dead,
 }
 
 [Serializable]
@@ -19,14 +27,17 @@ public class UserData
     Item[] inventory;
     int[] skill;
     int unitKind;
+    int createUnitKind;
+    int attackUnitKind;
     Unit[] unit;
-    int[] createUnit;
-    int[] attackUnit;
+    Unit[] createUnit;
+    Unit[] attackUnit;
     int[] building;
     int buildBuilding;
     int[] upgrade;
     int resource;
-    int castleState;
+    HeroState heroState;
+    CastleState castleState;
 
     public string ID { get { return Id; } }
     public string PW { get { return Pw; } }
@@ -35,6 +46,8 @@ public class UserData
     public Item[] Equipment { get { return equipment; } }
     public Item[] Inventory { get { return inventory; } }
     public Unit[] Unit { get { return unit; } }
+    public Unit[] CreateUnit { get { return createUnit; } }
+    public Unit[] AttackUnit { get { return attackUnit; } }
     public int UnitKind
     {
         get
@@ -49,10 +62,43 @@ public class UserData
             return unitKind;
         }
     }
+    public int CreateUnitKind
+    {
+        get
+        {
+            createUnitKind = 0;
+
+            createUnit = new Unit[unitNum];
+            for (int i = 0; i < unitNum; i++) { createUnit[i] = new Unit(); }
+
+            for (int i = 0; i < unitNum; i++)
+            {
+                if (createUnit[i].num != 0)
+                    createUnitKind++;
+            }
+            return createUnitKind;
+        }
+    }
+    public int AttackUnitKind
+    {
+        get
+        {
+            attackUnitKind = 0;
+
+            for (int i = 0; i < unitNum; i++)
+            {
+                if (attackUnit[i].num != 0)
+                    attackUnitKind++;
+            }
+            return attackUnitKind;
+        }
+    }
     public int[] Skill { get { return skill; } }
     public int[] Building { get { return building; } }
     public int[] Upgrade { get { return upgrade; } }
     public int Resource { get { return resource; } }
+    public HeroState HState { get { return heroState; } }
+    public CastleState CState { get { return castleState; } }
 
     public const int equipNum = 7;
     public const int invenNum = 16;
@@ -70,21 +116,24 @@ public class UserData
         inventory = new Item[invenNum];
         skill = new int[skillNum];
         unit = new Unit[unitNum];
-        createUnit = new int[unitNum];
-        attackUnit = new int[unitNum];
+        createUnit = new Unit[unitNum];
+        attackUnit = new Unit[unitNum];
         building = new int[buildingNum];
         buildBuilding = 0;
         upgrade = new int[unitNum];
         resource = 0;
-        castleState = (int)CastleState.Peace;
+        heroState = HeroState.Stationed;
+        castleState = CastleState.Peace;
 
-        for (int i = 0; i < equipNum; i++) { equipment[i] = new Item(0, 0); }
-        for (int i = 0; i < invenNum; i++) { inventory[i] = new Item(0, 0); }
-        for (int i = 0; i < skillNum; i++) { skill[i] = 0; }
-        for (int i = 0; i < unitNum; i++) { unit[i] = new Unit(0, 0); }
-        for (int i = 0; i < buildingNum; i++) { building[i] = 0; }
-        for (int i = 0; i < unitNum; i++) { upgrade[i] = 0; }
-}
+        for (int i = 0; i < equipNum; i++) { equipment[i] = new Item(); }
+        for (int i = 0; i < invenNum; i++) { inventory[i] = new Item(); }
+        for (int i = 0; i < unitNum; i++)
+        {
+            unit[i] = new Unit();
+            createUnit[i] = new Unit();
+            attackUnit[i] = new Unit();
+        }
+    }
 
     //레벨 변경
     public void SetLevel(int newLevel)
@@ -133,6 +182,7 @@ public class UserData
             inventory[index].Id --;
     }
 
+    //아이템용 빈칸찾기
     public int FindEmptySlot()
     {
         for (int i = 0; i < invenNum; i++)
@@ -145,6 +195,7 @@ public class UserData
         return -1;
     }
 
+    //아이템용 아이템 인덱스 찾기
     public int FindSlotWithId(int Id)
     {
         for(int i =0; i< invenNum; i++)
@@ -164,10 +215,16 @@ public class UserData
         resource -= amount;
     }
 
-    //성 상태 변경
-    public void ChangeCastleState(int index)
+    //영웅 상태 변경
+    public void ChangeHeroState(HeroState state)
     {
-        castleState = index;
+        heroState = state;
+    }
+
+    //성 상태 변경
+    public void ChangeCastleState(CastleState state)
+    {
+        castleState = state;
     }
 
     //유닛숫자변경
@@ -191,11 +248,5 @@ public class Item
     {
         Id = 0;
         num = 0;
-    }
-
-    public Item(int newId, int newNum)
-    {
-        Id = (byte) newId;
-        num = (byte) newNum;
     }
 }

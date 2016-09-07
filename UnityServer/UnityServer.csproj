@@ -38,6 +38,7 @@
     <Compile Include="Paket\Server2Client\ItemDataPacket.cs" />
     <Compile Include="Paket\Server2Client\ResourceDataPacket.cs" />
     <Compile Include="Paket\Server2Client\SkillDataPacket.cs" />
+    <Compile Include="Paket\Server2Client\StateDataPacket.cs" />
     <Compile Include="Paket\Server2Client\UnitDataPacket.cs" />
     <Compile Include="Paket\Server2Client\UpgradeDataPacket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

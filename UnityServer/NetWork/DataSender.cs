@@ -32,8 +32,6 @@ public class DataSender
                     tcpPacket = msgs.Dequeue();
                 }
 
-                Console.WriteLine("보낸메시지 길이 :" + tcpPacket.msg.Length);
-
                 try
                 {
                     client = tcpPacket.client;

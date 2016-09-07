@@ -5,7 +5,7 @@
         public bool Serialize(ResourceData data)
         {
             bool ret = true;
-            ret &= Serialize(data.gold);
+            ret &= Serialize(data.resource);
             return ret;
         }
 
@@ -18,10 +18,10 @@
             }
 
             bool ret = true;
-            byte gold = 0;
+            byte resource = 0;
 
-            ret &= Deserialize(ref gold);
-            element.gold = gold;
+            ret &= Deserialize(ref resource);
+            element.resource = resource;
 
             return ret;
         }
@@ -62,15 +62,15 @@
 
 public class ResourceData
 {
-    public int gold;
+    public int resource;
 
     public ResourceData()
     {
-        gold = 0;
+        resource = 0;
     }
 
-    public ResourceData(int newGold)
+    public ResourceData(int newResource)
     {
-        gold = newGold;
+        resource = newResource;
     }
 }

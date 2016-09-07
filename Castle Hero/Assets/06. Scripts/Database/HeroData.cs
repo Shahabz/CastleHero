@@ -29,6 +29,14 @@ public class HeroBaseData
         levelData = new List<HeroLevelData>();
     }
 
+    public HeroBaseData(HeroBaseData newBaseData)
+    {
+        Id = newBaseData.Id;
+        attackRange = newBaseData.attackRange;
+        colliderSize = newBaseData.colliderSize;
+        levelData = new List<HeroLevelData>();
+    }
+
     public HeroLevelData GetLevelData(int level)
     {
         if (levelData.Count >= level)
@@ -129,7 +137,7 @@ public class HeroLevelData
     public int Experience { get { return experience; } }
     public int Attack { get { return attack; } }
     public int Defense { get { return defense; } }
-    public int MagicDefens { get { return magicDefense; } }
+    public int MagicDefense { get { return magicDefense; } }
     public int Health { get { return health; } }
     public int Mana { get { return mana; } }
     public float MoveSpeed { get { return moveSpeed; } }
@@ -137,6 +145,22 @@ public class HeroLevelData
     public float RotateSpeed { get { return rotateSpeed; } }
     public int HealthRegeneration { get { return healthRegeneration; } }
     public int ManaRegeneration { get { return manaRegeneration; } }
+
+    public HeroLevelData()
+    {
+        level = 0;
+        experience = 0;
+        attack = 0;
+        defense = 0;
+        magicDefense = 0;
+        health = 0;
+        mana = 0;
+        moveSpeed = 0;
+        attackSpeed = 0;
+        rotateSpeed = 0;
+        healthRegeneration = 0;
+        manaRegeneration = 0;
+    }
 
     public HeroLevelData(int newLevel, int newExperience, int newAttack, int newDefense, int newMagicDefense, int newHealth,
         int newMana, float newMoveSpeed, float newAttackSpeed, float newRotateSpeed, int newHealthRegeneration, int newManaRegeneration)

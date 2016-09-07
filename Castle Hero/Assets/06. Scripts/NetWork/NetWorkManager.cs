@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
 
-public class NetWorkManager : MonoBehaviour
+public class NetworkManager : MonoBehaviour
 {
     public const short packetLength = 2;
     public const byte packetId = 1;
@@ -28,20 +27,34 @@ public class NetWorkManager : MonoBehaviour
     public delegate void RecvNotifier(byte[] data);
     private Dictionary<int, RecvNotifier> m_notifier = new Dictionary<int, RecvNotifier>();
 
-    UIManager uiManager;
-    GameManager gameManager;
-    DataManager dataManager;
-    LoadingManager loadingManager;
+    [SerializeField] UIManager uiManager;
+    [SerializeField] DataManager dataManager;
+    [SerializeField] LoadingManager loadingManager;
 
     void Awake()
     {
+        tag = "NetworkManager";
         DontDestroyOnLoad(transform.gameObject);
     }
 
     void Start ()
     {
         clientSock.Connect(IPAddress.Parse(ip), port);
+        dataReceiver = new DataReceiver(clientSock, receiveMsg, receiveLock);
 
+        SetServerConnection();
+    }
+
+    public void ManagerInitialize()
+    {
+        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
+        dataManager = GameObject.FindGameObjectWithTag("DataManager").GetComponent<DataManager>();
+        loadingManager = GameObject.FindGameObjectWithTag("LoadingManager").GetComponent<LoadingManager>();
+    }
+
+    void SetServerConnection()
+    {
+        m_notifier.Clear();
         m_notifier.Add((int)ServerPacketId.CreateResult, OnReceivedCreateAccountResult);
         m_notifier.Add((int)ServerPacketId.DeleteResult, OnReceivedDeleteAccountResult);
         m_notifier.Add((int)ServerPacketId.LoginResult, OnReceivedLoginResult);
@@ -52,14 +65,8 @@ public class NetWorkManager : MonoBehaviour
         m_notifier.Add((int)ServerPacketId.BuildingData, OnReceivedBuildingData);
         m_notifier.Add((int)ServerPacketId.UpgradeData, OnReceivedUpgradeData);
         m_notifier.Add((int)ServerPacketId.ResourceData, OnReceivedResourceData);
-
-        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
-        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
-        dataManager = GameObject.FindGameObjectWithTag("DataManager").GetComponent<DataManager>();
-        loadingManager = GameObject.FindGameObjectWithTag("LoadingManager").GetComponent<LoadingManager>();
-
-        dataReceiver = new DataReceiver(clientSock, receiveMsg, receiveLock);
-    }    
+        m_notifier.Add((int)ServerPacketId.StateData, OnReceivedStateData);
+    }
 
     public void GameExit()
     {
@@ -94,7 +101,6 @@ public class NetWorkManager : MonoBehaviour
 
             if (m_notifier.TryGetValue(msgType, out recvNotifier))
             {
-                Debug.Log("메시지 타입" + msgType);
                 recvNotifier(msg);
             }
             else
@@ -148,7 +154,7 @@ public class NetWorkManager : MonoBehaviour
         if (msg[0] == 1)
         {
             dataManager.SetId(uiManager.loginId.text);
-            StartCoroutine(loadingManager.LoadScene(GameManager.Scene.Loading, 1.0f));
+            StartCoroutine(loadingManager.LoadScene(GameManager.Scene.Login, GameManager.Scene.Wait, 1.0f));
             StartCoroutine(uiManager.DialogCtrl(1.0f, "로그인성공"));
         }
         else
@@ -186,10 +192,10 @@ public class NetWorkManager : MonoBehaviour
 
     void OnReceivedUnitData(byte[] msg)
     {
-        UnitDataPacket skillDataPacket = new UnitDataPacket(msg);
-        UnitData skillData = skillDataPacket.GetData();
+        UnitDataPacket unitDataPacket = new UnitDataPacket(msg);
+        UnitData[] unitData = unitDataPacket.GetData();
 
-        dataManager.SetUnitData(skillData);
+        dataManager.SetUnitData(unitData);
         loadingManager.dataCheck[(int)ServerPacketId.UnitData - 4] = true;
     }
 
@@ -218,6 +224,15 @@ public class NetWorkManager : MonoBehaviour
 
         dataManager.SetResourceData(resourceData);
         loadingManager.dataCheck[(int)ServerPacketId.ResourceData - 4] = true;
+    }
+
+    void OnReceivedStateData(byte[] msg)
+    {
+        StateDataPacket stateDataPacket = new StateDataPacket(msg);
+        StateData stateData = stateDataPacket.GetData();
+
+        dataManager.SetStateData(stateData);
+        loadingManager.dataCheck[(int)ServerPacketId.StateData - 4] = true;
     }
 
     public void CreateAccount(string Id, string Pw)
@@ -250,7 +265,18 @@ public class NetWorkManager : MonoBehaviour
 
     public void Logout()
     {
+        //No Packet
+        Debug.Log("로그아웃");
+        HeaderData headerData = new HeaderData();
+        HeaderSerializer HeaderSerializer = new HeaderSerializer();
 
+        headerData.Id = (byte)ClientPacketId.Logout;
+        HeaderSerializer.Serialize(headerData);
+        byte[] msg = HeaderSerializer.GetSerializedData();
+
+        sendMsg.Enqueue(msg);
+
+        StartCoroutine(loadingManager.LoadScene(GameManager.Scene.Wait, GameManager.Scene.Login, 1.0f));
     }
 
     byte[] CreateHeader<T>(IPacket<T> data, ClientPacketId Id)

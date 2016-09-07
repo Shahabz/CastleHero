@@ -44,7 +44,8 @@ public class DataHandler
         m_notifier.Add((int) ClientPacketId.BuildingDataRequest, BuildingDataRequest);
         m_notifier.Add((int) ClientPacketId.UpgradeDataRequest, UpgradeDataRequest);
         m_notifier.Add((int) ClientPacketId.ResourceDataRequest, ResourceDataRequest);
-        
+        m_notifier.Add((int) ClientPacketId.StateDataRequest, StateDataRequest);
+
         Thread handleThread = new Thread(new ThreadStart(DataHandle));
         handleThread.Start();
     }
@@ -97,9 +98,9 @@ public class DataHandler
 
 		Console.WriteLine ("아이디 : " + accountData.Id + "패스워드 : " + accountData.password);
 
-		//try
-		//{
-			if (database.AddUserData (accountData.Id, accountData.password))
+        try
+        {
+            if (database.AddUserData (accountData.Id, accountData.password))
 			{
                 msg[0] = (byte) UnityServer.Result.Success;
                 Console.WriteLine("가입 성공");
@@ -109,13 +110,13 @@ public class DataHandler
                 msg[0] = (byte)UnityServer.Result.Fail;
                 Console.WriteLine("가입 실패");
             }
-		//}
-		//catch
-		//{
-		//	Console.WriteLine ("DataHandler::AddPlayerData 에러");
-  //          Console.WriteLine("가입 실패");
-  //          msg[0] = (byte)UnityServer.Result.Fail;
-  //      }
+        }
+		catch
+		{
+			Console.WriteLine ("DataHandler::AddPlayerData 에러");
+            Console.WriteLine("가입 실패");
+            msg[0] = (byte)UnityServer.Result.Fail;
+        }
 
         Array.Resize(ref msg, 1);
         msg = CreateResultPacket(msg, ServerPacketId.CreateResult);
@@ -216,17 +217,19 @@ public class DataHandler
 
 		string id = (string)LoginUser[tcpPacket.client];
 
+        msg = new byte[1];
+
 		try
 		{
-			if (LoginUser.Contains (id))
+			if (LoginUser.ContainsValue (id))
 			{
-				LoginUser.Remove(id);
+				LoginUser.Remove(tcpPacket.client);
 				Console.WriteLine(id + "로그아웃");
                 msg[0] = (byte)UnityServer.Result.Success;
             }
 			else
 			{
-				Console.WriteLine ("로그인되어있지 않은 아이디입니다.");
+				Console.WriteLine ("로그인되어있지 않은 아이디입니다. : " + id);
                 msg[0] = (byte)UnityServer.Result.Fail;
             }
 		}
@@ -305,9 +308,18 @@ public class DataHandler
     {
         string Id = (string)LoginUser[tcpPacket.client];
         int unitKind = ((UserData)database.UserData[Id]).UnitKind;
-        Unit[] unit = ((UserData)database.UserData[Id]).Unit;
+        int createUnitKind = ((UserData)database.UserData[Id]).CreateUnitKind;
+        int attackUnitKind = ((UserData)database.UserData[Id]).AttackUnitKind;
 
-        UnitData unitData = new UnitData();
+        Unit[] unit = ((UserData)database.UserData[Id]).Unit;
+        Unit[] createUnit = ((UserData)database.UserData[Id]).CreateUnit;
+        Unit[] attackUnit = ((UserData)database.UserData[Id]).AttackUnit;
+        
+        UnitData[] unitData = new UnitData[3];
+        unitData[0] = new UnitData(unitKind, unit);
+        unitData[1] = new UnitData(createUnitKind, createUnit);
+        unitData[2] = new UnitData(attackUnitKind, attackUnit);
+
         UnitDataPacket unitDataPacket = new UnitDataPacket(unitData);
 
         msg = CreatePacket(unitDataPacket, ServerPacketId.UnitData);
@@ -352,6 +364,20 @@ public class DataHandler
         msg = CreatePacket(resourceDataPacket, ServerPacketId.ResourceData);
 
         return ServerPacketId.ResourceData;
+    }
+
+    public ServerPacketId StateDataRequest(byte[] data)
+    {
+        string Id = (string)LoginUser[tcpPacket.client];
+        byte heroState = (byte)((UserData)database.UserData[Id]).HState;
+        byte CastleState = (byte)((UserData)database.UserData[Id]).CState;
+
+        StateData stateData = new StateData();
+        StateDataPacket stateDataPacket = new StateDataPacket(stateData);
+
+        msg = CreatePacket(stateDataPacket, ServerPacketId.StateData);
+
+        return ServerPacketId.StateData;
     }
 
     byte[] CreateHeader<T>(IPacket<T> data, ServerPacketId Id)

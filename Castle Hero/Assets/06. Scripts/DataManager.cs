@@ -2,7 +2,24 @@
 
 class DataManager : MonoBehaviour
 {
+    public enum CastleState
+    {
+        Peace = 0,
+        Famine,
+        Attacked,
+        BeingAttacked
+    }
+
+    public enum HeroState
+    {
+        Stationed = 0,
+        Attack,
+        Return,
+        Dead,
+    }
+
     HeroDatabase heroDatabase;
+
     public const int equipNum = 7;
     public const int invenNum = 16;
     public const int skillNum = 15;
@@ -10,73 +27,52 @@ class DataManager : MonoBehaviour
     public const int buildingNum = 7;
 
     [SerializeField] string Id;
-    [SerializeField] int heroId;
-    [SerializeField] float attackRange;
-    [SerializeField] float colliderSize;
-
-    [SerializeField] int level;
-    [SerializeField] int currentExperience;
-    [SerializeField] int maxExperience;
-    [SerializeField] int attack;
-    [SerializeField] int defense;
-    [SerializeField] int magicDefense;
-    [SerializeField] int currentHealth;
-    [SerializeField] int maxHealth;
-    [SerializeField] int currentMana;
-    [SerializeField] int maxMana;
-    [SerializeField] float moveSpeed;
-    [SerializeField] float attackSpeed;
-    [SerializeField] float rotateSpeed;
-    [SerializeField] int healthRegeneration;
-    [SerializeField] int manaRegeneration;
-
+    [SerializeField] HeroBaseData heroData;
     [SerializeField] Item[] equipment;
     [SerializeField] Item[] inventory;
     [SerializeField] int[] skill;
     [SerializeField] Unit[] unit;
+    [SerializeField] Unit[] createUnit;
+    [SerializeField] Unit[] attackUnit;
     [SerializeField] int[] building;
     [SerializeField] int[] upgrade;
-    [SerializeField] int gold;
+    [SerializeField] int resource;
+    [SerializeField] HeroState heroState;
+    [SerializeField] CastleState castleState;
 
     public string ID { get { return Id; } }
-    public int HeroId { get { return heroId; } }
-    public float AttackRange { get { return attackRange; } }
-    public float ColliderSize { get { return colliderSize; } }
-
-    public int Level { get { return level; } }
-    public int CurrentExperience { get { return currentExperience; } }
-    public int MaxExperience { get { return maxExperience; } }
-    public int Attack { get { return attack; } }
-    public int Defense { get { return Defense; } }
-    public int MagicDefens { get { return magicDefense; } }
-    public int CurrnetHealth { get { return currentHealth; } }
-    public int MaxHealth { get { return maxHealth; } }
-    public int CurrentMana { get { return currentMana; } }
-    public int MaxMana { get { return maxMana; } }
-    public float MoveSpeed { get { return moveSpeed; } }
-    public float AttackSpeed { get { return attackSpeed; } }
-    public float RotateSpeed { get { return rotateSpeed; } }
-    public int HealthRegeneration { get { return healthRegeneration; } }
-    public int ManaRegeneration { get { return manaRegeneration; } }
-
+    public HeroBaseData HeroData { get { return heroData; } }
     public Item[] Equipment { get { return equipment; } }
     public Item[] Inventory { get { return inventory; } }
     public int[] Skill { get { return skill; } }
     public Unit[] Unit { get { return unit; } }
+    public Unit[] CreateUnit { get { return createUnit; } }
+    public Unit[] AttackUnit { get { return attackUnit; } }
     public int[] Building { get { return building; } }
     public int[] Upgrade { get { return upgrade; } }
-    public int Gold { get { return gold; } }
+    public int Resource { get { return resource; } }
+    public HeroState HState { get { return heroState; } }
+    public CastleState CState { get { return castleState; } }
 
     void Awake()
     {
+        tag = "DataManager";
         DontDestroyOnLoad(transform.gameObject);
     }
 
     void Start()
     {
+        InitializeData();
+    }
+
+    void InitializeData()
+    {
         heroDatabase = new HeroDatabase();
-        heroId = 1;
-        level = 1;
+        Id = "";
+        heroData = new HeroBaseData();
+        resource = 0;
+        heroState = 0;
+        castleState = 0;
 
         equipment = new Item[equipNum];
         inventory = new Item[invenNum];
@@ -95,46 +91,22 @@ class DataManager : MonoBehaviour
     {
         HeroBaseData baseData = heroDatabase.GetHeroData(newHeroData.Id);
         HeroLevelData levelData = baseData.GetLevelData(newHeroData.level);
-        
 
-        level = newHeroData.level;
-        heroId = newHeroData.Id;
-        attackRange = baseData.AttackRange;
-        colliderSize = baseData.ColliderSize;
-
-        maxExperience = levelData.Experience;
-        attack = levelData.Attack;
-        defense = levelData.Defense;
-        magicDefense = levelData.MagicDefens;
-        maxHealth = levelData.Health;
-        maxMana = levelData.Mana;
-        moveSpeed = levelData.MoveSpeed;
-        attackSpeed = levelData.AttackSpeed;
-        rotateSpeed = levelData.RotateSpeed;
-        healthRegeneration = levelData.HealthRegeneration;
-        manaRegeneration = levelData.ManaRegeneration;
-
-        currentExperience = 0;
-        currentHealth = 0;
-        currentMana = 0;
-
-        equipment = new Item[equipNum];
-        inventory = new Item[invenNum];
-        skill = new int[skillNum];
-        unit = new Unit[unitNum];
-        building = new int[buildingNum];
-        upgrade = new int[unitNum];
+        heroData = new HeroBaseData(heroDatabase.GetHeroData(newHeroData.Id));
+        heroData.Leveldata.Add(levelData);
     }
 
     public void SetItemData(ItemData itemData)
     {
         for (int i = 0; i < equipNum; i++)
         {
+            equipment[i] = new Item();
             equipment[i] = itemData.equipment[i];
         }
 
         for (int i = 0; i < invenNum; i++)
         {
+            inventory[i] = new Item();
             inventory[i] = itemData.inventory[i];
         }
     }
@@ -143,17 +115,29 @@ class DataManager : MonoBehaviour
     {
         for (int i = 0; i < skillNum; i++)
         {
-            Skill[i] = skillData.skillLevel[i];
+            skill[i] = skillData.skillLevel[i];
         }
     }
 
-    public void SetUnitData(UnitData unitData)
+    public void SetUnitData(UnitData[] unitData)
     {
-        unit = new Unit[unitData.unitKind];
+        unit = new Unit[unitData[0].unitKind];
+        createUnit = new Unit[unitData[1].unitKind];
+        attackUnit = new Unit[unitData[2].unitKind];
 
-        for (int i = 0; i < unitData.unitKind; i++)
+        for (int i = 0; i < unitData[0].unitKind; i++)
         {
-            unit[i] = new Unit(unitData.unit[i]);
+            unit[i] = new Unit(unitData[0].unit[i]);
+        }        
+
+        for (int i = 0; i < unitData[1].unitKind; i++)
+        {
+            createUnit[i] = new Unit(unitData[1].unit[i]);
+        }        
+
+        for (int i = 0; i < unitData[2].unitKind; i++)
+        {
+            attackUnit[i] = new Unit(unitData[2].unit[i]);
         }
     }
 
@@ -175,6 +159,12 @@ class DataManager : MonoBehaviour
 
     public void SetResourceData(ResourceData resourceData)
     {
-        gold = resourceData.gold;
+        resource = resourceData.resource;
+    }
+
+    public void SetStateData(StateData stateData)
+    {
+        heroState = (HeroState) stateData.heroData;
+        castleState = (CastleState) stateData.castleData;
     }
 }

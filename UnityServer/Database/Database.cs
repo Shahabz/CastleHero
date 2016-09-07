@@ -37,8 +37,8 @@ public class Database
 
     public bool AddUserData(string Id, string Pw)
     {
-        //try
-        //{
+        try
+        {
             UserData newUserData = new UserData(Id, Pw);
             if (!userData.Contains(Id))
             {
@@ -52,12 +52,12 @@ public class Database
                 Console.WriteLine("이미 존재하는 아이디");
                 return false;
             }
-        //}
-        //catch
-        //{
-        //    Console.WriteLine("Database::AddUserData.Add 에러");
-        //    return false;
-        //}
+        }
+        catch
+        {
+            Console.WriteLine("Database::AddUserData.Add 에러");
+            return false;
+        }
     }
 
     public bool DeleteUserData(string Id, string Pw)

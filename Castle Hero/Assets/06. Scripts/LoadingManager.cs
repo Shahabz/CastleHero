@@ -1,78 +1,90 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class LoadingManager : MonoBehaviour
 {
-    public const int waitData = 7;
+    public const int waitData = 8;
 
     public bool[] dataCheck;
-    [SerializeField] bool loadFinished;
+    [SerializeField] bool loadEnd;
 
-    NetWorkManager networkManager;
+    GameManager gameManager;
+    NetworkManager networkManager;
+    UIManager uiManager;
 
     void Awake()
     {
-        networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetWorkManager>();
+        tag = "LoadingManager";
         DontDestroyOnLoad(transform.gameObject);
     }
-
-    void Start()
+    
+    //매니저 초기화
+    public void ManagerInitialize()
     {
-        dataCheck = new bool[waitData];
-        InitializeDataCheck();
-        loadFinished = false;
+        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
+        networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
     }
 
     public void InitializeDataCheck()
     {
-        for(int i =0; i< waitData; i++)
+        for(int i =0; i< dataCheck.Length; i++)
         {
             dataCheck[i] = false;
         }
     }
 
-    public IEnumerator DataCheck(GameManager.Scene scene)
+    public IEnumerator LoadingEndCheck(GameManager.Scene scene)
     {
         while (true)
         {
             yield return new WaitForSeconds(1f);
 
-            for (int i = 0; i < waitData; i++)
+            for (int i = 0; i < dataCheck.Length; i++)
             {
                 if (dataCheck[i])
                 {
-                    loadFinished = true;
+                    loadEnd = true;
                 }
                 else
                 {
-                    loadFinished = false;
+                    loadEnd = false;
                     yield return null;
                 }
             }
 
-            if (loadFinished)
+            if (loadEnd)
             {
+                if (scene == GameManager.Scene.Login)
+                {
+                    gameManager.ManagerDestory();
+                }
+
+                SceneManager.LoadScene((int)scene);
                 StopAllCoroutines();
-                StartCoroutine(LoadScene(scene, 1.0f));
             }
         }
     }
 
     public void LoadWaitScene()
     {
-        StartCoroutine(loadHeroData());
-        StartCoroutine(loadSkillData());
-        StartCoroutine(loadItemData());
-        StartCoroutine(loadUnitData());
-        StartCoroutine(loadBuildingData());
-        StartCoroutine(loadUpgradeData());
-        StartCoroutine(loadResourceData());
-        StartCoroutine(DataCheck(GameManager.Scene.Wait));
+        dataCheck = new bool[waitData];
+        InitializeDataCheck();
+        loadEnd = false;
+
+        StartCoroutine(LoadHeroData());
+        StartCoroutine(LoadSkillData());
+        StartCoroutine(LoadItemData());
+        StartCoroutine(LoadUnitData());
+        StartCoroutine(LoadBuildingData());
+        StartCoroutine(LoadUpgradeData());
+        StartCoroutine(LoadResourceData());
+        StartCoroutine(LoadStateData());
+        StartCoroutine(LoadingEndCheck(GameManager.Scene.Wait));
     }
 
-    public IEnumerator loadHeroData()
+    public IEnumerator LoadHeroData()
     {
         while (!dataCheck[(int) ServerPacketId.HeroData - 4])
         {
@@ -81,7 +93,7 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
-    public IEnumerator loadSkillData()
+    public IEnumerator LoadSkillData()
     {
         while (!dataCheck[(int)ServerPacketId.SkillData - 4])
         {
@@ -90,7 +102,7 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
-    public IEnumerator loadItemData()
+    public IEnumerator LoadItemData()
     {
         while (!dataCheck[(int)ServerPacketId.ItemData - 4])
         {
@@ -99,7 +111,7 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
-    public IEnumerator loadUnitData()
+    public IEnumerator LoadUnitData()
     {
         while (!dataCheck[(int)ServerPacketId.UnitData - 4])
         {
@@ -108,7 +120,7 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
-    public IEnumerator loadBuildingData()
+    public IEnumerator LoadBuildingData()
     {
         while (!dataCheck[(int)ServerPacketId.BuildingData - 4])
         {
@@ -117,7 +129,7 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
-    public IEnumerator loadUpgradeData()
+    public IEnumerator LoadUpgradeData()
     {
         while (!dataCheck[(int)ServerPacketId.UpgradeData - 4])
         {
@@ -126,7 +138,7 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
-    public IEnumerator loadResourceData()
+    public IEnumerator LoadResourceData()
     {
         while (!dataCheck[(int)ServerPacketId.ResourceData - 4])
         {
@@ -135,10 +147,64 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
-    public IEnumerator LoadScene(GameManager.Scene scene, float delayTime)
+    public IEnumerator LoadStateData()
+    {
+        while (!dataCheck[(int)ServerPacketId.StateData - 4])
+        {
+            networkManager.DataRequest(ClientPacketId.StateDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public void LoadLoginScene()
+    {
+        dataCheck = new bool[1];
+        InitializeDataCheck();
+        loadEnd = false;
+
+        StartCoroutine(InitializeData());
+        StartCoroutine(LoadingEndCheck(GameManager.Scene.Login));
+    }
+
+    public IEnumerator InitializeData()
+    {
+        while (!dataCheck[0])
+        {
+            dataCheck[0] = true;
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
+    public IEnumerator LoadScene(GameManager.Scene prevScene, GameManager.Scene NextScene, float delayTime)
     {
         yield return new WaitForSeconds(delayTime);
-        SceneManager.LoadScene((int) scene);
-        LoadWaitScene();
+        SceneManager.LoadScene((int) GameManager.Scene.Loading);
+        Debug.Log("로딩씬 로드");
+
+        if (NextScene == GameManager.Scene.Wait)
+        {
+            LoadWaitScene();
+        }
+        else if (NextScene == GameManager.Scene.Login)
+        {
+            LoadLoginScene();
+        }
+    }
+
+    void OnLevelWasLoaded(int level)
+    {
+        if (level == (int)GameManager.Scene.Login)
+        {
+
+        }
+
+        if (level == (int)GameManager.Scene.Wait)
+        {
+            uiManager.SetUnitScrollView();
+            uiManager.SetState();
+            uiManager.SetWaitUIObject();
+            uiManager.WaitSceneAddListener();
+            
+        }
     }
 }

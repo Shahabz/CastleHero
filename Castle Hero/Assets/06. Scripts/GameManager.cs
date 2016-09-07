@@ -10,14 +10,41 @@ public class GameManager : MonoBehaviour
         Battle,
     }
 
-    NetWorkManager networkManager;
-    UIManager uiManager;
+    [SerializeField] NetworkManager networkManager;
+    [SerializeField] UIManager uiManager;
+    [SerializeField] LoadingManager loadingManager;
+    [SerializeField] DataManager dataManager;
 
     void Awake()
     {
-        networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetWorkManager>();
-        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
+        tag = "GameManager";
         DontDestroyOnLoad(transform.gameObject);
+    }
+
+    void Start()
+    {
+        ManagerInitialize();
+    }
+
+    void ManagerInitialize()
+    {
+        networkManager = (Instantiate(Resources.Load("Prefabs/Manager/NetworkManager")) as GameObject).GetComponent<NetworkManager>();
+        uiManager = (Instantiate(Resources.Load("Prefabs/Manager/UIManager") as GameObject)).GetComponent<UIManager>();
+        loadingManager = (Instantiate(Resources.Load("Prefabs/Manager/LoadingManager") as GameObject)).GetComponent<LoadingManager>();
+        dataManager = (Instantiate(Resources.Load("Prefabs/Manager/DataManager") as GameObject)).GetComponent<DataManager>();
+
+        networkManager.ManagerInitialize();
+        uiManager.ManagerInitialize();
+        loadingManager.ManagerInitialize();
+    }
+
+    public void ManagerDestory()
+    {
+        Destroy(networkManager.gameObject);
+        Destroy(uiManager.gameObject);
+        Destroy(loadingManager.gameObject);
+        Destroy(dataManager.gameObject);
+        Destroy(this.gameObject);
     }
 
     void FixedUpdate()
