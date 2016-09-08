@@ -44,6 +44,7 @@
 
     public BuildingDataPacket(byte[] data) // 패킷을 데이터로 변환(수신용)
     {
+        m_data = new BuildingData();
         BuildingDataSerializer serializer = new BuildingDataSerializer();
         serializer.SetDeserializedData(data);
         serializer.Deserialize(ref m_data);

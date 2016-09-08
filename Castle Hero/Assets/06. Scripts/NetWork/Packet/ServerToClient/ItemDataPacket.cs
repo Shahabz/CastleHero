@@ -7,14 +7,13 @@
             bool ret = true;
             for (int i = 0; i < DataManager.equipNum; i++)
             {
-                ret &= Serialize(data.equipment[i].Id);
-                ret &= Serialize(data.equipment[i].num);
+                ret &= Serialize((byte)data.equipment[i]);
             }
 
             for (int i = 0; i < DataManager.invenNum; i++)
             {
-                ret &= Serialize(data.inventory[i].Id);
-                ret &= Serialize(data.inventory[i].num);
+                ret &= Serialize((byte)data.inventoryId[i]);
+                ret &= Serialize((byte)data.inventoryNum[i]);
             }
 
             return ret;
@@ -29,20 +28,20 @@
             }
 
             bool ret = true;
-            Item item = new Item();
+            byte item = 0;
 
             for (int i = 0; i < DataManager.equipNum; i++)
             {
-                ret &= Deserialize(ref item.Id);
-                ret &= Deserialize(ref item.num);
+                ret &= Deserialize(ref item);
                 element.equipment[i] = item;
             }
 
             for (int i = 0; i < DataManager.invenNum; i++)
             {
-                ret &= Deserialize(ref item.Id);
-                ret &= Deserialize(ref item.num);
-                element.inventory[i] = item;
+                ret &= Deserialize(ref item);
+                element.inventoryId[i] = item;
+                ret &= Deserialize(ref item);
+                element.inventoryNum[i] = item;
             }
 
             return ret;
@@ -84,39 +83,24 @@
 
 public class ItemData
 {
-    public Item[] equipment;
-    public Item[] inventory;
+    public int[] equipment;
+    public int[] inventoryId;
+    public int[] inventoryNum;
 
     public ItemData()
     {
-        equipment = new Item[DataManager.equipNum];
-        inventory = new Item[DataManager.invenNum];
+        equipment = new int[DataManager.equipNum];
+        inventoryId = new int[DataManager.invenNum];
+        inventoryNum = new int[DataManager.invenNum];
 
-        for (int i = 0; i < DataManager.equipNum; i++) { equipment[i] = new Item(0, 0); }
-        for (int i = 0; i < DataManager.invenNum; i++) { inventory[i] = new Item(0, 0); }
+        for (int i = 0; i < DataManager.equipNum; i++) { equipment[i] = 0; }
+        for (int i = 0; i < DataManager.invenNum; i++) { inventoryId[i] = 0; inventoryNum[i] = 0; }
     }
 
-    public ItemData(Item[] newEquipment, Item[] newInventory)
+    public ItemData(int[] newEquipment, int[] newInventory, int[] newInventoryNum)
     {
         equipment = newEquipment;
-        inventory = newInventory;
-    }
-}
-
-public class Item
-{
-    public byte Id;
-    public byte num;
-
-    public Item()
-    {
-        Id = 0;
-        num = 0;
-    }
-
-    public Item(int newId, int newNum)
-    {
-        Id = (byte)newId;
-        num = (byte)newNum;
+        inventoryId = newInventory;
+        inventoryNum = newInventoryNum;
     }
 }

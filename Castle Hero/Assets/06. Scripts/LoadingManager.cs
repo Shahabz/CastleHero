@@ -203,8 +203,7 @@ public class LoadingManager : MonoBehaviour
             uiManager.SetUnitScrollView();
             uiManager.SetState();
             uiManager.SetWaitUIObject();
-            uiManager.WaitSceneAddListener();
-            
+            uiManager.WaitSceneAddListener();            
         }
     }
 }

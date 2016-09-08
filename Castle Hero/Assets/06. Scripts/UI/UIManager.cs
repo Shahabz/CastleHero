@@ -17,8 +17,11 @@ public class UIManager : MonoBehaviour
     //대기씬 패널
     public GameObject unitScroll;
     public GameObject informationPanel;
+    public GameObject currentPanel;
     public GameObject statusPanel;
-
+    public GameObject itemPanel;
+    public GameObject equipmentPanel;
+    public GameObject inventoryPanel;
 
     //로그인씬 버튼
     public Button loginButton;
@@ -65,6 +68,10 @@ public class UIManager : MonoBehaviour
     public Text magicDefense;
     public Text moveSpeed;
     public Text attackSpeed;
+
+    //대기씬 이미지    
+    public GameObject[] equipment;
+    public GameObject[] inventory;
 
     void Awake()
     {
@@ -126,6 +133,9 @@ public class UIManager : MonoBehaviour
     {
         informationPanel = GameObject.Find("InformationPanel");
         statusPanel = GameObject.Find("StatusPanel");
+        itemPanel = GameObject.Find("ItemPanel");
+        equipmentPanel = GameObject.Find("EquipmentPanel");
+        inventoryPanel = GameObject.Find("InventoryPanel");
 
         logoutButton = GameObject.Find("LogoutButton").GetComponent<Button>();
         statusButton = GameObject.Find("StatusButton").GetComponent<Button>();
@@ -149,7 +159,12 @@ public class UIManager : MonoBehaviour
         moveSpeed = GameObject.Find("MoveSpeed").GetComponent<Text>();
         attackSpeed = GameObject.Find("AttackSpeed").GetComponent<Text>();
 
+        CreateEquipmentSlot();
+        CreateInventorySlot();
+
         informationPanel.SetActive(false);
+        statusPanel.SetActive(false);
+        itemPanel.SetActive(false);
     }
 
     //로그인씬 버튼 이벤트 설정
@@ -174,6 +189,8 @@ public class UIManager : MonoBehaviour
     {
         logoutButton.onClick.AddListener(() => OnClickLogoutButton());
         statusButton.onClick.AddListener(() => OnCLickStatusButton());
+        quitButton.onClick.AddListener(() => OnClickQuitButton());
+        equipmentButton.onClick.AddListener(() => OnClickItemButton());
     }
 
     //가입하기버튼
@@ -267,15 +284,30 @@ public class UIManager : MonoBehaviour
     //x버튼
     public void OnClickQuitButton()
     {
+        statusPanel.SetActive(false);
+        itemPanel.SetActive(false);
         informationPanel.SetActive(false);
     }
 
     //스텟 버튼
     public void OnCLickStatusButton()
     {
+        currentPanel = statusPanel;
         informationPanel.SetActive(true);
         statusPanel.SetActive(true);
         SetStatus();
+    }
+
+    //장비 버튼
+    public void OnClickItemButton()
+    {
+        if(currentPanel != itemPanel)
+        {
+            currentPanel = itemPanel;
+            informationPanel.SetActive(true);
+            itemPanel.SetActive(true);
+            SetItemSlot();
+        }        
     }
 
     //스크롤뷰 셋팅
@@ -377,6 +409,53 @@ public class UIManager : MonoBehaviour
         magicDefense.text = dataManager.HeroData.Leveldata[0].MagicDefense.ToString();
         moveSpeed.text = dataManager.HeroData.Leveldata[0].MoveSpeed.ToString();
         attackSpeed.text = dataManager.HeroData.Leveldata[0].AttackSpeed.ToString();
+    }
+
+    //장비 셋팅
+    public void SetItemSlot()
+    {
+        
+    }
+
+    //슬롯 생성
+    public void CreateEquipmentSlot()
+    {
+        equipment = new GameObject[DataManager.equipNum];
+
+        for (int i = 0; i < DataManager.equipNum; i++)
+        {
+            equipment[i] = Instantiate(Resources.Load("Prefabs/Slot")) as GameObject;
+            equipment[i].transform.SetParent(equipmentPanel.transform);
+        }
+
+        equipment[0].name = "Helmet";
+        equipment[0].GetComponent<RectTransform>().localPosition = new Vector3(-160, 180, 0);
+        equipment[1].name = "Weapon";
+        equipment[1].GetComponent<RectTransform>().localPosition = new Vector3(-235, -50, 0);
+        equipment[2].name = "Armor";
+        equipment[2].GetComponent<RectTransform>().localPosition = new Vector3(-160, 20, 0);
+        equipment[3].name = "Gloves";
+        equipment[3].GetComponent<RectTransform>().localPosition = new Vector3(-85, -50, 0);
+        equipment[4].name = "Shoes";
+        equipment[4].GetComponent<RectTransform>().localPosition = new Vector3(-160, -150, 0);
+        equipment[5].name = "Ring";
+        equipment[5].GetComponent<RectTransform>().localPosition = new Vector3(-85, 60, 0);
+        equipment[6].name = "Necklace";
+        equipment[6].GetComponent<RectTransform>().localPosition = new Vector3(-160, 100, 0);
+    }
+
+    //슬롯 생성
+    public void CreateInventorySlot()
+    {
+        inventory = new GameObject[DataManager.invenNum];
+
+        for (int i = 0; i < DataManager.invenNum; i++)
+        {
+            inventory[i] = Instantiate(Resources.Load("Prefabs/Slot")) as GameObject;
+            inventory[i].transform.SetParent(inventoryPanel.transform);
+            inventory[i].name = "Slot " + (1 + i);
+            inventory[i].GetComponent<RectTransform>().localPosition = new Vector3(15 + (65 * (i % 4)), 35 - (65 * (i / 4)), 0);
+        }
     }
         
     //게임종료

@@ -23,8 +23,9 @@ public class UserData
     string Pw;
     int heroId;
     int heroLevel;
-    Item[] equipment;
-    Item[] inventory;
+    int[] equipment;
+    int[] inventoryId;
+    int[] inventoryNum;
     int[] skill;
     int unitKind;
     int createUnitKind;
@@ -43,8 +44,9 @@ public class UserData
     public string PW { get { return Pw; } }
     public int HeroId { get { return heroId; } }
     public int HeroLevel { get { return heroLevel; } }
-    public Item[] Equipment { get { return equipment; } }
-    public Item[] Inventory { get { return inventory; } }
+    public int[] Equipment { get { return equipment; } }
+    public int[] InventoryId { get { return inventoryId; } }
+    public int[] InventoryNum { get { return inventoryNum; } }
     public Unit[] Unit { get { return unit; } }
     public Unit[] CreateUnit { get { return createUnit; } }
     public Unit[] AttackUnit { get { return attackUnit; } }
@@ -112,8 +114,9 @@ public class UserData
         Pw = newPw;
         heroId = 1;
         heroLevel = 1;
-        equipment = new Item[equipNum];
-        inventory = new Item[invenNum];
+        equipment = new int[equipNum];
+        inventoryId = new int[invenNum];
+        inventoryNum = new int[invenNum];
         skill = new int[skillNum];
         unit = new Unit[unitNum];
         createUnit = new Unit[unitNum];
@@ -125,8 +128,6 @@ public class UserData
         heroState = HeroState.Stationed;
         castleState = CastleState.Peace;
 
-        for (int i = 0; i < equipNum; i++) { equipment[i] = new Item(); }
-        for (int i = 0; i < invenNum; i++) { inventory[i] = new Item(); }
         for (int i = 0; i < unitNum; i++)
         {
             unit[i] = new Unit();
@@ -145,13 +146,13 @@ public class UserData
     //장비 장착
     public void Equip(int itemId, int type)
     {
-        equipment[type].Id = (byte) itemId;
+        equipment[type] = (byte) itemId;
     }
 
     //장비 해제
     public void UnEquip(int index)
     {
-        equipment[index].Id = 0;
+        equipment[index] = 0;
     }
 
     //아이템 획득
@@ -161,7 +162,7 @@ public class UserData
 
         if(index != -1)
         {
-            inventory[index].num++;
+            inventoryNum[index] ++;
         }
         else
         {
@@ -169,8 +170,8 @@ public class UserData
 
             if (index != -1)
             {
-                inventory[index].Id = (byte) Id;
-                inventory[index].num ++;
+                inventoryId[index] = (byte) Id;
+                inventoryNum[index] ++;
             }
         }
     }
@@ -179,7 +180,9 @@ public class UserData
     public void AbstractItem(int index)
     {
         if(index != 0)
-            inventory[index].Id --;
+            inventoryNum[index] --;
+        if (inventoryNum[index] == 0)
+            inventoryId[index] = 0;
     }
 
     //아이템용 빈칸찾기
@@ -187,7 +190,7 @@ public class UserData
     {
         for (int i = 0; i < invenNum; i++)
         {
-            if(inventory[i].Id == 0)
+            if(inventoryId[i] == 0)
             {
                 return i;
             }
@@ -200,7 +203,7 @@ public class UserData
     {
         for(int i =0; i< invenNum; i++)
         {
-            if(inventory[i].Id == Id)
+            if(inventoryId[i] == Id)
             {
                 return i;
             }
@@ -236,17 +239,4 @@ public class UserData
     //유닛생산, 취소
     //유닛공격, 복귀
     //건물생산, 취소
-}
-
-[Serializable]
-public class Item
-{
-    public byte Id;
-    public byte num;
-
-    public Item()
-    {
-        Id = 0;
-        num = 0;
-    }
 }

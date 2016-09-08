@@ -71,6 +71,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\06. Scripts\Database\ItemDatabase.cs" />
     <Compile Include="Assets\06. Scripts\DataManager.cs" />
     <Compile Include="Assets\06. Scripts\Database\HeroData.cs" />
     <Compile Include="Assets\06. Scripts\Database\HeroDatabase.cs" />

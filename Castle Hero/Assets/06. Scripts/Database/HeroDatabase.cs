@@ -20,14 +20,32 @@ public enum State
 
 public class HeroDatabase
 {
+    private static HeroDatabase instance;
+
+    public static HeroDatabase Instance
+    {
+        get
+        {
+            if(instance == null)
+            {
+                instance = new HeroDatabase();
+            }
+
+            return instance;
+        }
+    }
+
     List<HeroBaseData> HeroData;
 
-    public HeroDatabase()
+    public void InitializeHeroDatabase()
     {
         HeroData = new List<HeroBaseData>();
-
+        
+        //이름, 공격범위, 충돌범위 
         HeroData.Add(new HeroBaseData((int)UnitID.None, 1.0f, 1.0f));
         HeroData.Add(new HeroBaseData((int)UnitID.Unity, 1.0f, 1.0f));
+
+        //레벨, 경험치, 공격력, 방어력, 마법방어력, 체력, 마나, 이동속도, 공격속도, 체력리젠, 마나리젠
         HeroData[(int)UnitID.Unity].AddLevelData(new HeroLevelData(1, 100, 5, 0, 0, 40, 5, 5, 0.8f, 1, 0, 0));
         HeroData[(int)UnitID.Unity].AddLevelData(new HeroLevelData(2, 200, 7, 0, 0, 45, 7, 5, 0.85f, 1, 0, 0));
         HeroData[(int)UnitID.Unity].AddLevelData(new HeroLevelData(3, 400, 9, 0, 0, 50, 9, 5, 0.9f, 1, 0, 0));

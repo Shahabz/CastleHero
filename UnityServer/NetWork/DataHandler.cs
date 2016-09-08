@@ -280,10 +280,11 @@ public class DataHandler
     public ServerPacketId ItemDataRequest(byte[] data)
     {
         string Id = (string)LoginUser[tcpPacket.client];
-        Item[] equipment = ((UserData)database.UserData[Id]).Equipment;
-        Item[] inventory = ((UserData)database.UserData[Id]).Inventory;
+        int[] equipment = ((UserData)database.UserData[Id]).Equipment;
+        int[] inventory = ((UserData)database.UserData[Id]).InventoryId;
+        int[] inventoryNum = ((UserData)database.UserData[Id]).InventoryNum;
 
-        ItemData itemData = new ItemData(equipment, inventory);
+        ItemData itemData = new ItemData(equipment, inventory, inventoryNum);
         ItemDataPacket itemDataPacket = new ItemDataPacket(itemData);
 
         msg = CreatePacket(itemDataPacket, ServerPacketId.ItemData);

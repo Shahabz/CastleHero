@@ -28,8 +28,9 @@ class DataManager : MonoBehaviour
 
     [SerializeField] string Id;
     [SerializeField] HeroBaseData heroData;
-    [SerializeField] Item[] equipment;
-    [SerializeField] Item[] inventory;
+    [SerializeField] int[] equipment;
+    [SerializeField] int[] inventoryId;
+    [SerializeField] int[] inventoryNum;
     [SerializeField] int[] skill;
     [SerializeField] Unit[] unit;
     [SerializeField] Unit[] createUnit;
@@ -42,8 +43,9 @@ class DataManager : MonoBehaviour
 
     public string ID { get { return Id; } }
     public HeroBaseData HeroData { get { return heroData; } }
-    public Item[] Equipment { get { return equipment; } }
-    public Item[] Inventory { get { return inventory; } }
+    public int[] Equipment { get { return equipment; } }
+    public int[] InventoryId { get { return inventoryId; } }
+    public int[] InventoryNum { get { return inventoryNum; } }
     public int[] Skill { get { return skill; } }
     public Unit[] Unit { get { return unit; } }
     public Unit[] CreateUnit { get { return createUnit; } }
@@ -67,15 +69,17 @@ class DataManager : MonoBehaviour
 
     void InitializeData()
     {
-        heroDatabase = new HeroDatabase();
+        heroDatabase = HeroDatabase.Instance;
+        heroDatabase.InitializeHeroDatabase();
         Id = "";
         heroData = new HeroBaseData();
         resource = 0;
         heroState = 0;
         castleState = 0;
 
-        equipment = new Item[equipNum];
-        inventory = new Item[invenNum];
+        equipment = new int[equipNum];
+        inventoryId = new int[invenNum];
+        inventoryNum = new int[invenNum];
         skill = new int[skillNum];
         unit = new Unit[unitNum];
         building = new int[buildingNum];
@@ -100,14 +104,13 @@ class DataManager : MonoBehaviour
     {
         for (int i = 0; i < equipNum; i++)
         {
-            equipment[i] = new Item();
             equipment[i] = itemData.equipment[i];
         }
 
         for (int i = 0; i < invenNum; i++)
         {
-            inventory[i] = new Item();
-            inventory[i] = itemData.inventory[i];
+            inventoryId[i] = itemData.inventoryId[i];
+            inventoryNum[i] = itemData.inventoryNum[i];
         }
     }
 

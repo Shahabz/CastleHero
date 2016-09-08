@@ -43,6 +43,7 @@
 
     public SkillDataPacket(byte[] data) // 패킷을 데이터로 변환(수신용)
     {
+        m_data = new SkillData();
         SkillDataSerializer serializer = new SkillDataSerializer();
         serializer.SetDeserializedData(data);
         serializer.Deserialize(ref m_data);

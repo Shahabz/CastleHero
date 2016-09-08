@@ -10,14 +10,13 @@ public class ItemDataPacket : IPacket<ItemData>
 
             for (int i = 0; i < UserData.equipNum; i++)
             {
-                ret &= Serialize(data.equipment[i].Id);
-                ret &= Serialize(data.equipment[i].num);
+                ret &= Serialize((byte)data.equipment[i]);
             }
 
             for (int i = 0; i < UserData.invenNum; i++)
             {
-                ret &= Serialize(data.inventory[i].Id);
-                ret &= Serialize(data.inventory[i].num);
+                ret &= Serialize((byte)data.inventoryId[i]);
+                ret &= Serialize((byte)data.inventoryNum[i]);
             }
 
             return ret;
@@ -32,20 +31,20 @@ public class ItemDataPacket : IPacket<ItemData>
             }
 
             bool ret = true;
-            Item item = new Item(); ;
+            byte item = 0;
 
             for (int i = 0; i < UserData.equipNum; i++)
             {
-                ret &= Deserialize(ref item.Id);
-                ret &= Deserialize(ref item.num);
+                ret &= Deserialize(ref item);
                 element.equipment[i] = item;
             }
 
             for (int i = 0; i < UserData.invenNum; i++)
             {
-                ret &= Deserialize(ref item.Id);
-                ret &= Deserialize(ref item.num);
-                element.inventory[i] = item;
+                ret &= Deserialize(ref item);
+                element.inventoryId[i] = item;
+                ret &= Deserialize(ref item);
+                element.inventoryNum[i] = item;
             }
 
             return ret;
@@ -61,6 +60,7 @@ public class ItemDataPacket : IPacket<ItemData>
 
     public ItemDataPacket(byte[] data) // 패킷을 데이터로 변환(수신용)
     {
+        m_data = new ItemData();
         ItemDataSerializer serializer = new ItemDataSerializer();
         serializer.SetDeserializedData(data);
         serializer.Deserialize(ref m_data);
@@ -87,21 +87,24 @@ public class ItemDataPacket : IPacket<ItemData>
 [Serializable]
 public class ItemData
 {
-    public Item[] equipment;
-    public Item[] inventory;
+    public int[] equipment;
+    public int[] inventoryId;
+    public int[] inventoryNum;
 
     public ItemData()
     {
-        equipment = new Item[UserData.equipNum];
-        inventory = new Item[UserData.invenNum];
+        equipment = new int[UserData.equipNum];
+        inventoryId = new int[UserData.invenNum];
+        inventoryNum = new int[UserData.invenNum];
 
-        for (int i = 0; i < UserData.equipNum; i++) { equipment[i].Id = 0; equipment[i].num = 0; }
-        for (int i = 0; i < UserData.invenNum; i++) { inventory[i].Id = 0; inventory[i].num = 0; }
+        for (int i = 0; i < UserData.equipNum; i++) { equipment[i] = 0;}
+        for (int i = 0; i < UserData.invenNum; i++) { inventoryId[i] = 0; inventoryNum[i] = 0; }
     }
 
-    public ItemData(Item[] newEquipment, Item[] newInventory)
+    public ItemData(int[] newEquipment, int[] newInventory, int[] newInventoryNum)
     {
         equipment = newEquipment;
-        inventory = newInventory;
+        inventoryId = newInventory;
+        inventoryNum = newInventoryNum;
     }
 }
