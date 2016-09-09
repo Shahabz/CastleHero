@@ -284,6 +284,7 @@ public class UIManager : MonoBehaviour
     //x버튼
     public void OnClickQuitButton()
     {
+        currentPanel = null;
         statusPanel.SetActive(false);
         itemPanel.SetActive(false);
         informationPanel.SetActive(false);
@@ -292,10 +293,17 @@ public class UIManager : MonoBehaviour
     //스텟 버튼
     public void OnCLickStatusButton()
     {
-        currentPanel = statusPanel;
-        informationPanel.SetActive(true);
-        statusPanel.SetActive(true);
-        SetStatus();
+        if(currentPanel != statusPanel)
+        {
+            if (currentPanel != null)
+            {
+                currentPanel.SetActive(false);
+            }
+            informationPanel.SetActive(true);
+            statusPanel.SetActive(true);
+            currentPanel = statusPanel;
+            SetStatus();
+        }
     }
 
     //장비 버튼
@@ -303,11 +311,15 @@ public class UIManager : MonoBehaviour
     {
         if(currentPanel != itemPanel)
         {
-            currentPanel = itemPanel;
+            if (currentPanel != null)
+            {
+                currentPanel.SetActive(false);
+            }
             informationPanel.SetActive(true);
             itemPanel.SetActive(true);
+            currentPanel = itemPanel;
             SetItemSlot();
-        }        
+        }
     }
 
     //스크롤뷰 셋팅
@@ -411,10 +423,18 @@ public class UIManager : MonoBehaviour
         attackSpeed.text = dataManager.HeroData.Leveldata[0].AttackSpeed.ToString();
     }
 
-    //장비 셋팅
+    //장비 UI 셋팅
     public void SetItemSlot()
     {
-        
+        for (int i = 0; i < DataManager.equipNum; i++)
+        {
+            equipment[i].transform.FindChild("Item").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icon/" + ItemDatabase.Instance.database[dataManager.Equipment[i]].Name) as Sprite;
+        }
+
+        for (int i = 0; i < DataManager.invenNum; i++)
+        {
+            inventory[i].transform.FindChild("Item").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icon/" + ItemDatabase.Instance.database[dataManager.InventoryId[i]].Name) as Sprite;
+        }
     }
 
     //슬롯 생성

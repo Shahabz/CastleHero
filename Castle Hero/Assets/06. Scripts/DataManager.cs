@@ -19,6 +19,7 @@ class DataManager : MonoBehaviour
     }
 
     HeroDatabase heroDatabase;
+    ItemDatabase itemDatabase;
 
     public const int equipNum = 7;
     public const int invenNum = 16;
@@ -71,6 +72,9 @@ class DataManager : MonoBehaviour
     {
         heroDatabase = HeroDatabase.Instance;
         heroDatabase.InitializeHeroDatabase();
+        itemDatabase = ItemDatabase.Instance;
+        itemDatabase.InitializeItemDatabase();
+
         Id = "";
         heroData = new HeroBaseData();
         resource = 0;
