@@ -14,6 +14,9 @@
     UpgradeDataRequest,
     ResourceDataRequest,
     StateDataRequest,
+    Build,
+    BuildCancel,
+    BuildDataRequest,
 }
 
 public enum ServerPacketId
@@ -30,4 +33,5 @@ public enum ServerPacketId
     UpgradeData,
     ResourceData,
     StateData,
+    BuildData,
 }

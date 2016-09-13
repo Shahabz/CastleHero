@@ -5,46 +5,45 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 public class Database
 {
-    Hashtable userData;
-    FileStream userDataFs;
+    Hashtable accountData;
+    FileStream fs;
     BinaryFormatter bin;
     
-    public Hashtable UserData { get { return userData; } }
-    public const string userDataFile = "UserData.data";
+    public Hashtable AccountData { get { return accountData; } }
+    public const string accountDataFile = "AccountData.data";
 
     /*
     유저 데이터 파일 : UserData.data
-    맵 데이터 파일 : MapData.data
-    
+    맵 데이터 파일 : MapData.data    
     */
 
     public Database()
     {
-        userDataFs = new FileStream(userDataFile, FileMode.OpenOrCreate);
         bin = new BinaryFormatter();
+        fs = new FileStream(accountDataFile, FileMode.OpenOrCreate);
 
-        if(userDataFs.Length > 0)
+        if (fs.Length > 0)
         {
-            userData = (Hashtable) bin.Deserialize(userDataFs);
+            accountData = (Hashtable)bin.Deserialize(fs);
         }
         else
         {
-            userData = new Hashtable();
+            accountData = new Hashtable();
         }
-        
+
         //worldMap Data
     }
 
-    public bool AddUserData(string Id, string Pw)
+    public bool AddAccountData(string Id, string Pw)
     {
         try
         {
-            UserData newUserData = new UserData(Id, Pw);
-            if (!userData.Contains(Id))
+            if (!accountData.Contains(Id))
             {
-                userData.Add(Id, newUserData);
-
-                FileSave(userDataFile);
+                accountData.Add(Id, new LoginData(Id, Pw));
+                FileSave(accountDataFile, accountData);
+                FileSave(Id + ".data", new UserData(Id, Pw));
+                
                 return true;
             }
             else
@@ -60,16 +59,20 @@ public class Database
         }
     }
 
-    public bool DeleteUserData(string Id, string Pw)
+    public bool DeleteAccountData(string Id, string Pw)
     {
         try
         {
-            if (UserData.Contains(Id))
+            if (accountData.Contains(Id))
             {
-                if (((UserData)userData[Id]).PW == Pw)
+                if (((UserData)accountData[Id]).PW == Pw)
                 {
-                    userData.Remove(Id);
-                    FileSave(userDataFile);
+                    accountData.Remove(Id);
+                    FileSave(accountDataFile, accountData);
+
+                    FileInfo file = new FileInfo(Id + ".data");
+                    file.Delete();
+
                     return true;
                 }
                 else
@@ -91,25 +94,12 @@ public class Database
         }
     }
 
-    public bool ChangeUserData(string Id, int level)
+    public bool FileSave(string path, object data)
     {
         try
         {
-
-        }
-        catch
-        {
-
-        }
-        return true;
-    }
-
-    public bool FileSave(string path)
-    {
-        try
-        {
-            userDataFs.Close();
-            userDataFs = new FileStream(path, FileMode.Create);
+            fs.Close();
+            fs = new FileStream(path, FileMode.Create);
         }
         catch
         {
@@ -119,25 +109,46 @@ public class Database
         
         try
         {
-            bin.Serialize(userDataFs, userData);
+            bin.Serialize(fs, data);
         }
         catch (Exception e)
         {
             Console.WriteLine("Database::FileSaveSerialize 에러" + e.Message);
             return false;
         }
-        
-        try
-        {
-            userDataFs.Close();
-            userDataFs = new FileStream(path, FileMode.Open);
-        }
-        catch
-        {
-            Console.WriteLine("Database::FileSave.FileMode.Open 에러");
-            return false;
-        }
 
         return true;
+    }
+
+    public UserData GetAccountData(string Id)
+    {
+        fs.Close();
+        fs = new FileStream(Id + ".data", FileMode.Open);
+
+        if(fs.Length > 0)
+        {
+            return (UserData)bin.Deserialize(fs);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+}
+
+[Serializable]
+public class LoginData
+{
+    string Id;
+    string Pw;
+
+    public string ID { get { return Id; } }
+    public string PW { get { return Pw; } }
+
+    public LoginData(string newId, string newPw)
+    {
+        Id = newId;
+        Pw = newPw;
     }
 }

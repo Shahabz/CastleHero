@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Net.Sockets;
-using System.Collections;
 using System.Collections.Generic;
 
 public class DataHandler
@@ -10,10 +9,10 @@ public class DataHandler
 	public Queue<TcpPacket> sendMsgs;
 	public Database database;
 
-	public Hashtable LoginUser;
+	public Dictionary<Socket, string> LoginUser;
 
-	Object receiveLock;
-	Object sendLock;
+	object receiveLock;
+	object sendLock;
 
 	TcpPacket tcpPacket;
     
@@ -23,28 +22,31 @@ public class DataHandler
     public delegate ServerPacketId RecvNotifier(byte[] data);
 	private Dictionary<int, RecvNotifier> m_notifier = new Dictionary<int, RecvNotifier>();
 
-	public DataHandler (Queue<TcpPacket> receiveQueue, Queue<TcpPacket> sendQueue, Object newReceiveLock, Object newSendLock, Hashtable newHashtable)
-	{
-		database = new Database ();
-		receiveMsgs = receiveQueue;
-		sendMsgs = sendQueue;
-		receiveLock = newReceiveLock;
-		sendLock = newSendLock;
-		LoginUser = newHashtable;
+    public DataHandler(Queue<TcpPacket> receiveQueue, Queue<TcpPacket> sendQueue, object newReceiveLock, object newSendLock)
+    {
+        database = new Database();
+        receiveMsgs = receiveQueue;
+        sendMsgs = sendQueue;
+        receiveLock = newReceiveLock;
+        sendLock = newSendLock;
+        LoginUser = new Dictionary<Socket, string>();
 
-		m_notifier.Add((int) ClientPacketId.Create, CreateAccount);
-		m_notifier.Add((int) ClientPacketId.Delete, DeleteAccount);
-		m_notifier.Add((int) ClientPacketId.Login, Login);
-		m_notifier.Add((int) ClientPacketId.Logout, Logout);
-        m_notifier.Add((int) ClientPacketId.GameClose, GameClose);
-        m_notifier.Add((int) ClientPacketId.HeroDataRequest, HeroDataRequest);
-        m_notifier.Add((int) ClientPacketId.ItemDataRequest, ItemDataRequest);
-        m_notifier.Add((int) ClientPacketId.SkillDataRequest, SkillDataRequest);
-        m_notifier.Add((int) ClientPacketId.UnitDataRequest, UnitDataRequest);
-        m_notifier.Add((int) ClientPacketId.BuildingDataRequest, BuildingDataRequest);
-        m_notifier.Add((int) ClientPacketId.UpgradeDataRequest, UpgradeDataRequest);
-        m_notifier.Add((int) ClientPacketId.ResourceDataRequest, ResourceDataRequest);
-        m_notifier.Add((int) ClientPacketId.StateDataRequest, StateDataRequest);
+        m_notifier.Add((int)ClientPacketId.Create, CreateAccount);
+        m_notifier.Add((int)ClientPacketId.Delete, DeleteAccount);
+        m_notifier.Add((int)ClientPacketId.Login, Login);
+        m_notifier.Add((int)ClientPacketId.Logout, Logout);
+        m_notifier.Add((int)ClientPacketId.GameClose, GameClose);
+        m_notifier.Add((int)ClientPacketId.HeroDataRequest, HeroDataRequest);
+        m_notifier.Add((int)ClientPacketId.ItemDataRequest, ItemDataRequest);
+        m_notifier.Add((int)ClientPacketId.SkillDataRequest, SkillDataRequest);
+        m_notifier.Add((int)ClientPacketId.UnitDataRequest, UnitDataRequest);
+        m_notifier.Add((int)ClientPacketId.BuildingDataRequest, BuildingDataRequest);
+        m_notifier.Add((int)ClientPacketId.UpgradeDataRequest, UpgradeDataRequest);
+        m_notifier.Add((int)ClientPacketId.ResourceDataRequest, ResourceDataRequest);
+        m_notifier.Add((int)ClientPacketId.StateDataRequest, StateDataRequest);
+        m_notifier.Add((int)ClientPacketId.Build, BuildBuilding);
+        m_notifier.Add((int)ClientPacketId.BuildCancel, BuildCancel);
+        m_notifier.Add((int)ClientPacketId.BuildDataRequest, BuildDataRequest);
 
         Thread handleThread = new Thread(new ThreadStart(DataHandle));
         handleThread.Start();
@@ -100,7 +102,7 @@ public class DataHandler
 
         try
         {
-            if (database.AddUserData (accountData.Id, accountData.password))
+            if (database.AddAccountData (accountData.Id, accountData.password))
 			{
                 msg[0] = (byte) UnityServer.Result.Success;
                 Console.WriteLine("가입 성공");
@@ -135,7 +137,7 @@ public class DataHandler
 
 		try
 		{
-			if (database.DeleteUserData (accountData.Id, accountData.password))
+			if (database.DeleteAccountData (accountData.Id, accountData.password))
 			{
                 msg[0] = (byte)UnityServer.Result.Success;
                 Console.WriteLine("탈퇴 성공");
@@ -170,18 +172,23 @@ public class DataHandler
 
         try
         {
-            if (database.UserData.Contains(accountData.Id))
+            if (database.AccountData.Contains(accountData.Id))
             {
-                if (((UserData)database.UserData[accountData.Id]).PW == accountData.password)
+                if (((LoginData)database.AccountData[accountData.Id]).PW == accountData.password)
                 {
                     if (!LoginUser.ContainsValue(accountData.Id))
                     {
                         msg[0] = (byte)UnityServer.Result.Success;
                         Console.WriteLine("로그인 성공");
-                        LoginUser[tcpPacket.client] = accountData.Id;
+                        LoginUser.Add(tcpPacket.client, accountData.Id);
                     }
                     else
                     {
+                    if (CompareIP(GetSocket(accountData.Id).RemoteEndPoint.ToString(), tcpPacket.client.RemoteEndPoint.ToString()))
+                        {
+                            LoginUser.Remove(GetSocket(accountData.Id));
+                        }
+
                         Console.WriteLine("현재 접속중인 아이디입니다.");
                         msg[0] = (byte)UnityServer.Result.Fail;
                     }
@@ -215,7 +222,7 @@ public class DataHandler
 	{
 		Console.WriteLine (tcpPacket.client.RemoteEndPoint.ToString() + " 로그아웃요청");
 
-		string id = (string)LoginUser[tcpPacket.client];
+        string id = LoginUser[tcpPacket.client];
 
         msg = new byte[1];
 
@@ -253,6 +260,7 @@ public class DataHandler
         try
 		{
             Console.WriteLine(tcpPacket.client.RemoteEndPoint.ToString() + "가 접속을 종료했습니다.");
+            LoginUser.Remove(tcpPacket.client);
             tcpPacket.client.Close();
 		}
 		catch
@@ -263,11 +271,34 @@ public class DataHandler
 		return ServerPacketId.None;
 	}
 
+    public ServerPacketId BuildBuilding(byte[] data)
+    {
+        string Id = LoginUser[tcpPacket.client];
+
+        BuildPacket buildPacket = new BuildPacket(data);
+        Build buildData = buildPacket.GetData();
+        DateTime time = DateTime.Now;
+        database.GetAccountData(Id).Build(buildData.Id, time);
+
+        Console.WriteLine(buildData.Id + " , " + time.ToString());
+
+        return ServerPacketId.None;
+    }
+
+    public ServerPacketId BuildCancel(byte[] data)
+    {
+        string Id = LoginUser[tcpPacket.client];
+
+        database.GetAccountData(Id).BuildCancel();
+
+        return ServerPacketId.None;
+    }
+
     public ServerPacketId HeroDataRequest(byte[] data)
     {
-        string Id = (string)LoginUser[tcpPacket.client];
-        int heroId = ((UserData)database.UserData[Id]).HeroId;
-        int level = ((UserData)database.UserData[Id]).HeroLevel;
+        string Id = LoginUser[tcpPacket.client];
+        int heroId = database.GetAccountData(Id).HeroId;
+        int level = database.GetAccountData(Id).HeroLevel;
 
         HeroData heroData = new HeroData(heroId, level);
         HeroDataPacket heroDataPacket = new HeroDataPacket(heroData);
@@ -279,10 +310,10 @@ public class DataHandler
 
     public ServerPacketId ItemDataRequest(byte[] data)
     {
-        string Id = (string)LoginUser[tcpPacket.client];
-        int[] equipment = ((UserData)database.UserData[Id]).Equipment;
-        int[] inventory = ((UserData)database.UserData[Id]).InventoryId;
-        int[] inventoryNum = ((UserData)database.UserData[Id]).InventoryNum;
+        string Id = LoginUser[tcpPacket.client];
+        int[] equipment = database.GetAccountData(Id).Equipment;
+        int[] inventory = database.GetAccountData(Id).InventoryId;
+        int[] inventoryNum = database.GetAccountData(Id).InventoryNum;
 
         ItemData itemData = new ItemData(equipment, inventory, inventoryNum);
         ItemDataPacket itemDataPacket = new ItemDataPacket(itemData);
@@ -294,8 +325,8 @@ public class DataHandler
 
     public ServerPacketId SkillDataRequest(byte[] data)
     {
-        string Id = (string)LoginUser[tcpPacket.client];
-        int[] skill = ((UserData)database.UserData[Id]).Skill;
+        string Id = LoginUser[tcpPacket.client];
+        int[] skill = database.GetAccountData(Id).Skill;
 
         SkillData skillData = new SkillData(skill);
         SkillDataPacket skillDataPacket = new SkillDataPacket(skillData);
@@ -307,14 +338,14 @@ public class DataHandler
 
     public ServerPacketId UnitDataRequest(byte[] data)
     {
-        string Id = (string)LoginUser[tcpPacket.client];
-        int unitKind = ((UserData)database.UserData[Id]).UnitKind;
-        int createUnitKind = ((UserData)database.UserData[Id]).CreateUnitKind;
-        int attackUnitKind = ((UserData)database.UserData[Id]).AttackUnitKind;
+        string Id = LoginUser[tcpPacket.client];
+        int unitKind = database.GetAccountData(Id).UnitKind;
+        int createUnitKind = database.GetAccountData(Id).CreateUnitKind;
+        int attackUnitKind = database.GetAccountData(Id).AttackUnitKind;
 
-        Unit[] unit = ((UserData)database.UserData[Id]).Unit;
-        Unit[] createUnit = ((UserData)database.UserData[Id]).CreateUnit;
-        Unit[] attackUnit = ((UserData)database.UserData[Id]).AttackUnit;
+        Unit[] unit = database.GetAccountData(Id).Unit;
+        Unit[] createUnit = database.GetAccountData(Id).CreateUnit;
+        Unit[] attackUnit = database.GetAccountData(Id).AttackUnit;
         
         UnitData[] unitData = new UnitData[3];
         unitData[0] = new UnitData(unitKind, unit);
@@ -330,8 +361,8 @@ public class DataHandler
 
     public ServerPacketId BuildingDataRequest(byte[] data)
     {
-        string Id = (string)LoginUser[tcpPacket.client];
-        int[] building = ((UserData)database.UserData[Id]).Skill;
+        string Id = LoginUser[tcpPacket.client];
+        int[] building = database.GetAccountData(Id).Skill;
 
         BuildingData buildingData = new BuildingData(building);
         BuildingDataPacket buildingDataPacket = new BuildingDataPacket(buildingData);
@@ -343,8 +374,8 @@ public class DataHandler
 
     public ServerPacketId UpgradeDataRequest(byte[] data)
     {
-        string Id = (string)LoginUser[tcpPacket.client];
-        int[] upgrade = ((UserData)database.UserData[Id]).Upgrade;
+        string Id = LoginUser[tcpPacket.client];
+        int[] upgrade = database.GetAccountData(Id).Upgrade;
 
         UpgradeData upgradeData = new UpgradeData(upgrade);
         UpgradeDataPacket upgradeDataPacket = new UpgradeDataPacket(upgradeData);
@@ -356,8 +387,8 @@ public class DataHandler
 
     public ServerPacketId ResourceDataRequest(byte[] data)
     {
-        string Id = (string)LoginUser[tcpPacket.client];
-        int resource = ((UserData)database.UserData[Id]).Resource;
+        string Id = LoginUser[tcpPacket.client];
+        int resource = database.GetAccountData(Id).Resource;
 
         ResourceData resourceData = new ResourceData(resource);
         ResourceDataPacket resourceDataPacket = new ResourceDataPacket(resourceData);
@@ -369,9 +400,9 @@ public class DataHandler
 
     public ServerPacketId StateDataRequest(byte[] data)
     {
-        string Id = (string)LoginUser[tcpPacket.client];
-        byte heroState = (byte)((UserData)database.UserData[Id]).HState;
-        byte CastleState = (byte)((UserData)database.UserData[Id]).CState;
+        string Id = LoginUser[tcpPacket.client];
+        byte heroState = (byte)database.GetAccountData(Id).HState;
+        byte CastleState = (byte)database.GetAccountData(Id).CState;
 
         StateData stateData = new StateData();
         StateDataPacket stateDataPacket = new StateDataPacket(stateData);
@@ -379,6 +410,46 @@ public class DataHandler
         msg = CreatePacket(stateDataPacket, ServerPacketId.StateData);
 
         return ServerPacketId.StateData;
+    }
+
+    public ServerPacketId BuildDataRequest(byte[] data)
+    {
+        string Id = LoginUser[tcpPacket.client];
+        
+        byte buildBuilding = (byte)database.GetAccountData(Id).BuildBuilding;
+        DateTime time;
+
+        if (buildBuilding != 0)
+        {
+            time = database.GetAccountData(Id).BuildTime;
+        }
+        else
+        {
+            time = DateTime.Now;
+        }
+
+        BuildData buildData = new BuildData(buildBuilding, time);
+        BuildDataPacket buildDataPacket = new BuildDataPacket(buildData);
+
+        msg = CreatePacket(buildDataPacket, ServerPacketId.BuildData);
+
+        return ServerPacketId.BuildData;
+    }
+
+    public void BuildChecker()
+    {
+        while (true)
+        {
+            Thread.Sleep(1800000);
+
+            foreach (KeyValuePair<Socket, string> client in LoginUser)
+            {
+                if(database.GetAccountData(client.Value).BuildTime < DateTime.Now)
+                {
+                    
+                }
+            }
+        }        
     }
 
     byte[] CreateHeader<T>(IPacket<T> data, ServerPacketId Id)
@@ -416,6 +487,31 @@ public class DataHandler
         HeaderSerializer.Serialize(headerData);
         msg = CombineByte(HeaderSerializer.GetSerializedData(), msg);
         return msg;
+    }
+
+    bool CompareIP(string ip1, string ip2)
+    {
+        if(ip1.Substring(0, ip1.IndexOf(":")) == ip2.Substring(0, ip2.IndexOf(":")))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public Socket GetSocket(string Id)
+    {
+        foreach (KeyValuePair<Socket, string> client in LoginUser)
+        {
+            if (client.Value == Id)
+            {
+                return client.Key;
+            }
+        }
+
+        return null;
     }
 
     public static byte[] CombineByte (byte[] array1, byte[] array2)

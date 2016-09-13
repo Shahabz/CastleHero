@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 class DataManager : MonoBehaviour
 {
@@ -20,12 +21,13 @@ class DataManager : MonoBehaviour
 
     HeroDatabase heroDatabase;
     ItemDatabase itemDatabase;
+    BuildingDatabase buildingDatabase;
 
     public const int equipNum = 7;
     public const int invenNum = 16;
     public const int skillNum = 15;
     public const int unitNum = 5;
-    public const int buildingNum = 7;
+    public const int buildingNum = 6;
 
     [SerializeField] string Id;
     [SerializeField] HeroBaseData heroData;
@@ -37,6 +39,8 @@ class DataManager : MonoBehaviour
     [SerializeField] Unit[] createUnit;
     [SerializeField] Unit[] attackUnit;
     [SerializeField] int[] building;
+    [SerializeField] int buildBuilding;
+    [SerializeField] DateTime buildTime;
     [SerializeField] int[] upgrade;
     [SerializeField] int resource;
     [SerializeField] HeroState heroState;
@@ -52,6 +56,8 @@ class DataManager : MonoBehaviour
     public Unit[] CreateUnit { get { return createUnit; } }
     public Unit[] AttackUnit { get { return attackUnit; } }
     public int[] Building { get { return building; } }
+    public int BuildBuilding { get { return buildBuilding; } }
+    public DateTime BuildTime { get { return buildTime; } }
     public int[] Upgrade { get { return upgrade; } }
     public int Resource { get { return resource; } }
     public HeroState HState { get { return heroState; } }
@@ -74,6 +80,8 @@ class DataManager : MonoBehaviour
         heroDatabase.InitializeHeroDatabase();
         itemDatabase = ItemDatabase.Instance;
         itemDatabase.InitializeItemDatabase();
+        buildingDatabase = BuildingDatabase.Instance;
+        buildingDatabase.InitializeBuildingDatabase();
 
         Id = "";
         heroData = new HeroBaseData();
@@ -152,7 +160,7 @@ class DataManager : MonoBehaviour
     {
         for (int i = 0; i < buildingNum; i++)
         {
-            building[i] = buildingData.building[i];            
+            building[i] = buildingData.building[i];         
         }
     }
 
@@ -173,5 +181,11 @@ class DataManager : MonoBehaviour
     {
         heroState = (HeroState) stateData.heroData;
         castleState = (CastleState) stateData.castleData;
+    }
+
+    public void SetBuildData(BuildData buildData)
+    {
+        buildBuilding = buildData.Id;
+        buildTime = new DateTime(buildData.year, buildData.month, buildData.day, buildData.hour, buildData.minute, buildData.second);
     }
 }

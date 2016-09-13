@@ -66,6 +66,7 @@ public class NetworkManager : MonoBehaviour
         m_notifier.Add((int)ServerPacketId.UpgradeData, OnReceivedUpgradeData);
         m_notifier.Add((int)ServerPacketId.ResourceData, OnReceivedResourceData);
         m_notifier.Add((int)ServerPacketId.StateData, OnReceivedStateData);
+        m_notifier.Add((int)ServerPacketId.BuildData, OnReceivedBuildData);
     }
 
     public void GameExit()
@@ -235,6 +236,15 @@ public class NetworkManager : MonoBehaviour
         loadingManager.dataCheck[(int)ServerPacketId.StateData - 4] = true;
     }
 
+    void OnReceivedBuildData(byte[] msg)
+    {
+        BuildDataPacket buildDataPacket = new BuildDataPacket(msg);
+        BuildData buildData = buildDataPacket.GetData();
+
+        dataManager.SetBuildData(buildData);
+        StartCoroutine(uiManager.BuildTimeCheck());
+    }
+
     public void CreateAccount(string Id, string Pw)
     {
         Debug.Log("회원가입");
@@ -277,6 +287,15 @@ public class NetworkManager : MonoBehaviour
         sendMsg.Enqueue(msg);
 
         StartCoroutine(loadingManager.LoadScene(GameManager.Scene.Wait, GameManager.Scene.Login, 1.0f));
+    }
+
+    public void BuildBuilding(BuildingId Id)
+    {
+        Build build = new Build((int) Id);
+        BuildPacket buildPacket = new BuildPacket(build);
+        byte[] msg = CreatePacket(buildPacket, ClientPacketId.Build);
+
+        sendMsg.Enqueue(msg);
     }
 
     byte[] CreateHeader<T>(IPacket<T> data, ClientPacketId Id)

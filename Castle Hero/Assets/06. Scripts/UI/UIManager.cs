@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System;
 using System.Collections;
 
 public class UIManager : MonoBehaviour
@@ -22,6 +23,7 @@ public class UIManager : MonoBehaviour
     public GameObject itemPanel;
     public GameObject equipmentPanel;
     public GameObject inventoryPanel;
+    public GameObject buildingPanel;
 
     //로그인씬 버튼
     public Button loginButton;
@@ -44,6 +46,7 @@ public class UIManager : MonoBehaviour
     public Button skillButton;
     public Button unitButton;
     public Button buildingButton;
+    public Button buildButton;
     public Button upgradeButton;
     public Button quitButton;
 
@@ -68,10 +71,27 @@ public class UIManager : MonoBehaviour
     public Text magicDefense;
     public Text moveSpeed;
     public Text attackSpeed;
+    public Text castleLevel;
+    public Text mineLevel;
+    public Text storageLevel;
+    public Text barracksLevel;
+    public Text wallLevel;
+    public Text laboratoryLevel;
+    public Text buildingName;
+    public Text buildingExplanation;
+    public Text currentLevel;
+    public Text nextLevel;
+    public Text nextLevelExplanation;
+    public Text buildCost;
+    public Text buildTime;
 
     //대기씬 이미지    
     public GameObject[] equipment;
     public GameObject[] inventory;
+    public GameObject buildingState;
+    public GameObject buildingImage;
+
+    public BuildingId currentBuilding;
 
     void Awake()
     {
@@ -136,6 +156,7 @@ public class UIManager : MonoBehaviour
         itemPanel = GameObject.Find("ItemPanel");
         equipmentPanel = GameObject.Find("EquipmentPanel");
         inventoryPanel = GameObject.Find("InventoryPanel");
+        buildingPanel = GameObject.Find("BuildingPanel");
 
         logoutButton = GameObject.Find("LogoutButton").GetComponent<Button>();
         statusButton = GameObject.Find("StatusButton").GetComponent<Button>();
@@ -143,6 +164,7 @@ public class UIManager : MonoBehaviour
         skillButton = GameObject.Find("SkillButton").GetComponent<Button>();
         unitButton = GameObject.Find("UnitButton").GetComponent<Button>();
         buildingButton = GameObject.Find("BuildingButton").GetComponent<Button>();
+        buildButton = GameObject.Find("BuildButton").GetComponent<Button>();
         upgradeButton = GameObject.Find("UpgradeButton").GetComponent<Button>();
         quitButton = GameObject.Find("QuitButton").GetComponent<Button>();
 
@@ -158,6 +180,22 @@ public class UIManager : MonoBehaviour
         magicDefense = GameObject.Find("MagicDefense").GetComponent<Text>();
         moveSpeed = GameObject.Find("MoveSpeed").GetComponent<Text>();
         attackSpeed = GameObject.Find("AttackSpeed").GetComponent<Text>();
+        castleLevel = GameObject.Find("CastleLevel").GetComponent<Text>();
+        mineLevel = GameObject.Find("MineLevel").GetComponent<Text>();
+        storageLevel = GameObject.Find("StorageLevel").GetComponent<Text>();
+        barracksLevel = GameObject.Find("BarracksLevel").GetComponent<Text>();
+        wallLevel = GameObject.Find("WallLevel").GetComponent<Text>();
+        laboratoryLevel = GameObject.Find("LaboratoryLevel").GetComponent<Text>();
+        buildingName = GameObject.Find("BuildingName").GetComponent<Text>();
+        buildingExplanation = GameObject.Find("BuildingExplanation").GetComponent<Text>();
+        currentLevel = GameObject.Find("CurrentLevel").GetComponent<Text>();
+        nextLevel = GameObject.Find("NextLevel").GetComponent<Text>();
+        nextLevelExplanation = GameObject.Find("NextLevelExplanation").GetComponent<Text>();
+        buildCost = GameObject.Find("BuildCost").GetComponent<Text>();
+        buildTime = GameObject.Find("BuildTime").GetComponent<Text>();
+
+        buildingState = GameObject.Find("BuildingState");
+        buildingImage = GameObject.Find("BuildingImage");
 
         CreateEquipmentSlot();
         CreateInventorySlot();
@@ -165,6 +203,8 @@ public class UIManager : MonoBehaviour
         informationPanel.SetActive(false);
         statusPanel.SetActive(false);
         itemPanel.SetActive(false);
+        buildingState.SetActive(false);
+        buildingPanel.SetActive(false);
     }
 
     //로그인씬 버튼 이벤트 설정
@@ -191,6 +231,8 @@ public class UIManager : MonoBehaviour
         statusButton.onClick.AddListener(() => OnCLickStatusButton());
         quitButton.onClick.AddListener(() => OnClickQuitButton());
         equipmentButton.onClick.AddListener(() => OnClickItemButton());
+        buildingButton.onClick.AddListener(() => OnClickBuildingButton());
+        buildButton.onClick.AddListener(() => OnClickBuildButton());
     }
 
     //가입하기버튼
@@ -322,10 +364,34 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    //건물 버튼
+    public void OnClickBuildingButton()
+    {
+        if(currentPanel != buildingPanel)
+        {
+            if(currentPanel != null)
+            {
+                currentPanel.SetActive(false);
+            }
+
+            informationPanel.SetActive(true);
+            buildingPanel.SetActive(true);
+            currentPanel = buildingPanel;
+            SetBuilding();
+        }
+    }
+
+    //건설 버튼
+    public void OnClickBuildButton()
+    {
+        networkManager.BuildBuilding(currentBuilding);
+        networkManager.DataRequest(ClientPacketId.BuildDataRequest);
+    }
+
     //스크롤뷰 셋팅
     public void SetUnitScrollView()
     {
-        unitScroll = GameObject.Find("ScrollImage");
+        unitScroll = GameObject.Find("UnitScroll");
 
         unitScroll.GetComponent<RectTransform>().localPosition = Vector3.zero;
 
@@ -428,12 +494,12 @@ public class UIManager : MonoBehaviour
     {
         for (int i = 0; i < DataManager.equipNum; i++)
         {
-            equipment[i].transform.FindChild("Item").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icon/" + ItemDatabase.Instance.database[dataManager.Equipment[i]].Name) as Sprite;
+            equipment[i].transform.FindChild("Item").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icon/" + ItemDatabase.Instance.itemData[dataManager.Equipment[i]].Name) as Sprite;
         }
 
         for (int i = 0; i < DataManager.invenNum; i++)
         {
-            inventory[i].transform.FindChild("Item").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icon/" + ItemDatabase.Instance.database[dataManager.InventoryId[i]].Name) as Sprite;
+            inventory[i].transform.FindChild("Item").GetComponent<Image>().sprite = Resources.Load<Sprite>("Icon/" + ItemDatabase.Instance.itemData[dataManager.InventoryId[i]].Name) as Sprite;
         }
     }
 
@@ -477,7 +543,64 @@ public class UIManager : MonoBehaviour
             inventory[i].GetComponent<RectTransform>().localPosition = new Vector3(15 + (65 * (i % 4)), 35 - (65 * (i / 4)), 0);
         }
     }
-        
+
+    //건물 UI 셋팅
+    public void SetBuilding()
+    {
+        castleLevel.text = dataManager.Building[(int)BuildingId.Castle - 1].ToString();
+        mineLevel.text = dataManager.Building[(int)BuildingId.Mine - 1].ToString();
+        storageLevel.text = dataManager.Building[(int)BuildingId.Storage- 1].ToString();
+        barracksLevel.text = dataManager.Building[(int)BuildingId.Barracks - 1].ToString();
+        wallLevel.text = dataManager.Building[(int)BuildingId.Wall - 1].ToString();
+        laboratoryLevel.text = dataManager.Building[(int)BuildingId.Laboratory- 1].ToString();
+    }
+
+    //건물 설명 창
+    public void SetBuildingState(BuildingId Id)
+    {
+        if(currentBuilding != Id)
+        {
+            buildingState.SetActive(true);
+            Building building = BuildingDatabase.Instance.buildingData[(int)Id];
+            buildingName.text = building.Name;
+            buildingExplanation.text = building.Explanation;
+
+            currentLevel.text = dataManager.Building[(int)Id - 1].ToString();
+
+            if (currentLevel.text != "10")
+            {
+                nextLevel.text = (dataManager.Building[(int)Id - 1] + 1).ToString();
+                nextLevelExplanation.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1]].NextLevel;
+                buildTime.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1]].BuildTime.ToString();
+                buildCost.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1]].Cost.ToString();
+            }
+            else
+            {
+                nextLevel.text = "최대레벨";
+                nextLevelExplanation.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1] - 1].NextLevel;
+                buildTime.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1] - 1].BuildTime.ToString();
+                buildCost.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1] - 1].Cost.ToString();
+                buildButton.interactable = false;
+            }
+
+            currentBuilding = Id;
+        }        
+    }
+
+    //건물 시간 체크
+    public IEnumerator BuildTimeCheck()
+    {
+        while (dataManager.BuildBuilding != -1)
+        {
+            yield return new WaitForFixedUpdate();
+            int currentBuild = dataManager.BuildBuilding;
+            int level = dataManager.Building[currentBuild];
+
+            buildTime.text = (dataManager.BuildTime.ToString());
+            //BuildingDatabase.Instance.buildingData[currentBuild + 1].BuildingData[level].BuildTime).ToString()
+        }
+    }
+         
     //게임종료
     public void OnClickExitButton()
     {

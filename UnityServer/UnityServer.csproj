@@ -33,6 +33,8 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Paket\Client2Server\BuildPacket.cs" />
+    <Compile Include="Paket\Server2Client\BuildDataPacket.cs" />
     <Compile Include="Paket\Server2Client\BuildingDataPacket.cs" />
     <Compile Include="Paket\Server2Client\HeroDataPacket.cs" />
     <Compile Include="Paket\Server2Client\ItemDataPacket.cs" />

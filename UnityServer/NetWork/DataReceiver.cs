@@ -7,22 +7,20 @@ using System.Collections.Generic;
 public class DataReceiver
 {
 	public Socket listenSock;
-    public Hashtable LoginUser;
 	Queue<TcpPacket> msgs;
 
-	Object receiveLock;
+	object receiveLock;
 
     AsyncCallback asyncAcceptCallback;
     AsyncCallback asyncReceiveLengthCallBack;
 	AsyncCallback asyncReceiveDataCallBack;
 
-	public DataReceiver(Queue<TcpPacket> newQueue, IPAddress newAddress, int newPort, Object newLock, Hashtable newHashtable)
+	public DataReceiver(Queue<TcpPacket> newQueue, IPAddress newAddress, int newPort, object newLock)
 	{
 		listenSock = new Socket (AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 		listenSock.Bind (new IPEndPoint (newAddress, newPort));
 		listenSock.Listen (10);
 
-		LoginUser = newHashtable;
 		msgs = newQueue;
 		receiveLock = newLock;
 
@@ -41,7 +39,6 @@ public class DataReceiver
         Console.WriteLine(clientSock.RemoteEndPoint.ToString() + " 접속");
 
         TcpClient tcpClient = new TcpClient (clientSock);
-		LoginUser.Add (tcpClient.client, tcpClient.Id);
 
         listenSock.BeginAccept(asyncAcceptCallback, (Object)listenSock);
 
@@ -60,7 +57,6 @@ public class DataReceiver
 		}
 		catch
 		{
-            LoginUser.Remove (clientSock);
 			return;
 		}
 
@@ -100,7 +96,6 @@ public class DataReceiver
 		}
 		catch
 		{
-            LoginUser.Remove(clientSock);
 			return;
 		}
 

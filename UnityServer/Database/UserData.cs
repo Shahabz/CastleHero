@@ -34,6 +34,7 @@ public class UserData
     Unit[] createUnit;
     Unit[] attackUnit;
     int[] building;
+    DateTime buildTime;
     int buildBuilding;
     int[] upgrade;
     int resource;
@@ -97,6 +98,8 @@ public class UserData
     }
     public int[] Skill { get { return skill; } }
     public int[] Building { get { return building; } }
+    public DateTime BuildTime { get { return buildTime; } }
+    public int BuildBuilding { get { return buildBuilding; } }
     public int[] Upgrade { get { return upgrade; } }
     public int Resource { get { return resource; } }
     public HeroState HState { get { return heroState; } }
@@ -106,7 +109,7 @@ public class UserData
     public const int invenNum = 16;
     public const int skillNum = 15;
     public const int unitNum = 5;
-    public const int buildingNum = 7;
+    public const int buildingNum = 6;
 
     public UserData(string newId, string newPw)
     {
@@ -122,6 +125,7 @@ public class UserData
         createUnit = new Unit[unitNum];
         attackUnit = new Unit[unitNum];
         building = new int[buildingNum];
+        buildTime = new DateTime();
         buildBuilding = 0;
         upgrade = new int[unitNum];
         resource = 0;
@@ -236,7 +240,21 @@ public class UserData
         unit[unitId - 1].num += (byte) unitNum;
     }
 
+    //건물건설
+    public void Build(int buildingId, DateTime newBuildTime)
+    {
+        buildBuilding = buildingId;
+        buildTime = newBuildTime;
+    }
+
+    //건물 취소
+    public void BuildCancel()
+    {
+        buildBuilding = 0;
+        buildTime = DateTime.Now;
+    }
+    
     //유닛생산, 취소
     //유닛공격, 복귀
-    //건물생산, 취소
+
 }

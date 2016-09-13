@@ -21,13 +21,11 @@ public class UnityServer
 		Queue<TcpPacket> receiveData = new Queue<TcpPacket> ();
 		Queue<TcpPacket> sendData = new Queue<TcpPacket> ();
 
-		Object receiveLock = new Object ();
-		Object sendLock = new Object ();
+		object receiveLock = new Object ();
+		object sendLock = new Object ();
 
-		Hashtable LoginUser = new Hashtable ();
-
-        DataReceiver dataReceiver = new DataReceiver(receiveData, IPAddress.Parse ("192.168.94.88"), 3000, receiveLock, LoginUser);
-		DataHandler dataHandler = new DataHandler (receiveData, sendData, receiveLock, sendLock, LoginUser);
+        DataReceiver dataReceiver = new DataReceiver(receiveData, IPAddress.Parse ("192.168.94.88"), 3000, receiveLock);
+		DataHandler dataHandler = new DataHandler (receiveData, sendData, receiveLock, sendLock);
 		DataSender dataSender = new DataSender (sendData, sendLock);
 
         //while (true)

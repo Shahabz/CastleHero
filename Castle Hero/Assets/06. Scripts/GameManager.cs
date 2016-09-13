@@ -44,7 +44,7 @@ public class GameManager : MonoBehaviour
         Destroy(uiManager.gameObject);
         Destroy(loadingManager.gameObject);
         Destroy(dataManager.gameObject);
-        Destroy(this.gameObject);
+        Destroy(gameObject);
     }
 
     void FixedUpdate()
