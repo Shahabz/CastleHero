@@ -56,8 +56,8 @@ class DataManager : MonoBehaviour
     public Unit[] CreateUnit { get { return createUnit; } }
     public Unit[] AttackUnit { get { return attackUnit; } }
     public int[] Building { get { return building; } }
-    public int BuildBuilding { get { return buildBuilding; } }
-    public DateTime BuildTime { get { return buildTime; } }
+    public int BuildBuilding { get { return buildBuilding; } set { buildBuilding = value; } }
+    public DateTime BuildTime { get { return buildTime; } set { buildTime = value; } }
     public int[] Upgrade { get { return upgrade; } }
     public int Resource { get { return resource; } }
     public HeroState HState { get { return heroState; } }
@@ -96,6 +96,8 @@ class DataManager : MonoBehaviour
         unit = new Unit[unitNum];
         building = new int[buildingNum];
         upgrade = new int[unitNum];
+
+        buildBuilding = buildingNum;
     }
 
     public void SetId(string newId)
@@ -186,6 +188,17 @@ class DataManager : MonoBehaviour
     public void SetBuildData(BuildData buildData)
     {
         buildBuilding = buildData.Id;
-        buildTime = new DateTime(buildData.year, buildData.month, buildData.day, buildData.hour, buildData.minute, buildData.second);
+
+        if(buildBuilding != buildingNum)
+        {
+            int level = building[buildData.Id] + 1;
+            buildTime = new DateTime(buildData.year, buildData.month, buildData.day, buildData.hour, buildData.minute, buildData.second) + buildingDatabase.GetBuildingData(buildBuilding).GetLevelData(level).BuildTime;
+        }
+        else
+        {
+            buildTime = DateTime.Now;
+        }
+		
+        Debug.Log("빌드 데이터 : " + buildData.Id + " , " + buildTime.ToString());
     }
 }

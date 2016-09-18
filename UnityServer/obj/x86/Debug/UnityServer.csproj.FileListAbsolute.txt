@@ -20,3 +20,8 @@ C:\Users\user\Documents\CastleHero\UnityServer\obj\x86\Debug\UnityServer.pdb
 C:\Users\user\Documents\CastleHero\UnityServer\bin\Debug\UnityServer.exe
 C:\Users\user\Documents\CastleHero\UnityServer\bin\Debug\UnityServer.pdb
 C:\Users\user\Documents\CastleHero\UnityServer\obj\x86\Debug\UnityServer.csprojResolveAssemblyReference.cache
+C:\Users\ele\Documents\CastleHero\UnityServer\obj\x86\Debug\UnityServer.exe
+C:\Users\ele\Documents\CastleHero\UnityServer\obj\x86\Debug\UnityServer.pdb
+C:\Users\ele\Documents\CastleHero\UnityServer\bin\Debug\UnityServer.exe
+C:\Users\ele\Documents\CastleHero\UnityServer\bin\Debug\UnityServer.pdb
+C:\Users\ele\Documents\CastleHero\UnityServer\obj\x86\Debug\UnityServer.csprojResolveAssemblyReference.cache

@@ -126,7 +126,7 @@ public class UserData
         attackUnit = new Unit[unitNum];
         building = new int[buildingNum];
         buildTime = new DateTime();
-        buildBuilding = 0;
+        buildBuilding = buildingNum;
         upgrade = new int[unitNum];
         resource = 0;
         heroState = HeroState.Stationed;
@@ -250,7 +250,14 @@ public class UserData
     //건물 취소
     public void BuildCancel()
     {
-        buildBuilding = 0;
+        buildBuilding = buildingNum;
+        buildTime = DateTime.Now;
+    }
+
+    public void Buildcomplete()
+    {
+        building[buildBuilding]++;
+        buildBuilding = buildingNum;
         buildTime = DateTime.Now;
     }
     

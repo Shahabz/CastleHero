@@ -30,6 +30,7 @@ public enum ClientPacketId
     Build,
     BuildCancel,
     BuildDataRequest,
+    BuildComplete,
 }
 
 public enum ServerPacketId

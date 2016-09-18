@@ -28,7 +28,7 @@ public class BuildDataPacket : IPacket<BuildData>
 
             bool ret = true;
             byte Id = 0;
-            byte year = 0;
+            short year = 0;
             byte month = 0;
             byte day = 0;
             byte hour = 0;
@@ -90,7 +90,7 @@ public class BuildDataPacket : IPacket<BuildData>
 public class BuildData
 {
     public byte Id;
-    public byte year;
+    public short year;
     public byte month;
     public byte day;
     public byte hour;
@@ -108,10 +108,10 @@ public class BuildData
         second = 0;
     }
 
-    public BuildData(int Id, DateTime time)
+    public BuildData(int newId, DateTime time)
     {
-        Id = (byte)Id;
-        year = (byte)time.Year;
+        Id = (byte)newId;
+        year = (short)time.Year;
         month = (byte)time.Month;
         day = (byte)time.Day;
         hour = (byte)time.Hour;

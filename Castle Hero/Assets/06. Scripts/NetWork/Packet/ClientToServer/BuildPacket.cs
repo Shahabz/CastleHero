@@ -1,6 +1,4 @@
-﻿using System;
-
-public class BuildPacket : IPacket<Build>
+﻿public class BuildPacket : IPacket<Build>
 {
     public class BuildDataSerializer : Serializer
     {
@@ -72,8 +70,8 @@ public class Build
         Id = 0;
     }
 
-    public Build(int Id)
+    public Build(BuildingId newId)
     {
-        Id = (byte)Id;
+        Id = (byte)newId;
     }
 }

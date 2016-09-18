@@ -10,35 +10,33 @@ public class UnityServer
     public enum Result
     {
         Success = 1,
-        Fail = 2,        
+        Fail = 2,
     };
 
-	public const short packetId = 1;
-	public const short packetLength = 2;    
+    public const short packetId = 1;
+    public const short packetLength = 2;
 
-	public static void Main (string[] args)
-	{
-		Queue<TcpPacket> receiveData = new Queue<TcpPacket> ();
-		Queue<TcpPacket> sendData = new Queue<TcpPacket> ();
+    public static void Main(string[] args)
+    {
+        Queue<TcpPacket> receiveData = new Queue<TcpPacket>();
+        Queue<TcpPacket> sendData = new Queue<TcpPacket>();
 
-		object receiveLock = new Object ();
-		object sendLock = new Object ();
+        object receiveLock = new Object();
+        object sendLock = new Object();
 
-        DataReceiver dataReceiver = new DataReceiver(receiveData, IPAddress.Parse ("192.168.94.88"), 3000, receiveLock);
-		DataHandler dataHandler = new DataHandler (receiveData, sendData, receiveLock, sendLock);
-		DataSender dataSender = new DataSender (sendData, sendLock);
+        DataReceiver dataReceiver = new DataReceiver(receiveData, IPAddress.Loopback, 3000, receiveLock);
+        DataHandler dataHandler = new DataHandler(receiveData, sendData, receiveLock, sendLock);
+        DataSender dataSender = new DataSender(sendData, sendLock);
 
         //while (true)
         //{
         //    Thread.Sleep(1000);
 
-        //    foreach(DictionaryEntry client in dataReceiver.LoginUser)
+        //    foreach (DictionaryEntry client in dataHandler.database.UserData)
         //    {
-        //        Socket newSocket = (Socket) client.Key;
-        //        Console.WriteLine(newSocket.Connected);
-        //        Console.WriteLine(newSocket.RemoteEndPoint.ToString());
-        //        Console.WriteLine("큐 : " + receiveData.Count);
+        //        UserData newUserData = (UserData)client.Value;
+        //        Console.WriteLine(newUserData.BuildBuilding);
         //    }
         //}
-	}
+    }
 }

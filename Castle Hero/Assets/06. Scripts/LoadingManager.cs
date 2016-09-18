@@ -4,14 +4,17 @@ using UnityEngine.SceneManagement;
 
 public class LoadingManager : MonoBehaviour
 {
-    public const int waitData = 8;
+    public const int waitData = 9;
 
     public bool[] dataCheck;
     [SerializeField] bool loadEnd;
+    [SerializeField] GameManager.Scene currentScene;
 
     GameManager gameManager;
     NetworkManager networkManager;
     UIManager uiManager;
+
+    public GameManager.Scene CurrentScene { get { return currentScene; } }
 
     void Awake()
     {
@@ -61,6 +64,7 @@ public class LoadingManager : MonoBehaviour
                     gameManager.ManagerDestory();
                 }
 
+                currentScene = scene;
                 SceneManager.LoadScene((int)scene);
                 StopAllCoroutines();
             }
@@ -81,6 +85,7 @@ public class LoadingManager : MonoBehaviour
         StartCoroutine(LoadUpgradeData());
         StartCoroutine(LoadResourceData());
         StartCoroutine(LoadStateData());
+        StartCoroutine(LoadBuildData());
         StartCoroutine(LoadingEndCheck(GameManager.Scene.Wait));
     }
 
@@ -156,6 +161,15 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
+    public IEnumerator LoadBuildData()
+    {
+        while (!dataCheck[(int)ServerPacketId.BuildData - 4])
+        {
+            networkManager.DataRequest(ClientPacketId.BuildDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
     public void LoadLoginScene()
     {
         dataCheck = new bool[1];
@@ -179,6 +193,7 @@ public class LoadingManager : MonoBehaviour
     {
         yield return new WaitForSeconds(delayTime);
         SceneManager.LoadScene((int) GameManager.Scene.Loading);
+        currentScene = GameManager.Scene.Loading;
         Debug.Log("로딩씬 로드");
 
         if (NextScene == GameManager.Scene.Wait)
@@ -203,7 +218,8 @@ public class LoadingManager : MonoBehaviour
             uiManager.SetUnitScrollView();
             uiManager.SetState();
             uiManager.SetWaitUIObject();
-            uiManager.WaitSceneAddListener();            
+            uiManager.WaitSceneAddListener();
+            StartCoroutine(uiManager.BuildTimeCheck());
         }
     }
 }

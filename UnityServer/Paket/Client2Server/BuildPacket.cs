@@ -72,8 +72,8 @@ public class Build
         Id = 0;
     }
 
-    public Build(int Id)
+    public Build(int newId)
     {
-        Id = (byte)Id;
+        Id = (byte)newId;
     }
 }

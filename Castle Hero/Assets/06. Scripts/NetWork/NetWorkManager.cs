@@ -9,8 +9,8 @@ public class NetworkManager : MonoBehaviour
     public const short packetLength = 2;
     public const byte packetId = 1;
 
-    [SerializeField]
-    string ip = "192.168.94.88";
+    //[SerializeField]
+    //string ip = "192.168.0.15";
     [SerializeField]
     int port = 3000;
     
@@ -39,7 +39,7 @@ public class NetworkManager : MonoBehaviour
 
     void Start ()
     {
-        clientSock.Connect(IPAddress.Parse(ip), port);
+        clientSock.Connect(IPAddress.Loopback, port);
         dataReceiver = new DataReceiver(clientSock, receiveMsg, receiveLock);
 
         SetServerConnection();
@@ -206,7 +206,15 @@ public class NetworkManager : MonoBehaviour
         BuildingData buildingData = buildingDataPacket.GetData();
 
         dataManager.SetBuildingData(buildingData);
-        loadingManager.dataCheck[(int)ServerPacketId.BuildingData - 4] = true;
+        if(loadingManager.CurrentScene == GameManager.Scene.Loading)
+        {
+            loadingManager.dataCheck[(int)ServerPacketId.BuildingData - 4] = true;
+        }
+        else if(loadingManager.CurrentScene == GameManager.Scene.Wait)
+        {
+            uiManager.SetBuilding();
+        }
+        
     }
 
     void OnReceivedUpgradeData(byte[] msg)
@@ -241,8 +249,18 @@ public class NetworkManager : MonoBehaviour
         BuildDataPacket buildDataPacket = new BuildDataPacket(msg);
         BuildData buildData = buildDataPacket.GetData();
 
+        Debug.Log("건설Id : " + buildData.Id);
+        Debug.Log("건설시간 : " + buildData.year + "." + buildData.month + "." + buildData.day + "." + buildData.hour + ":" + buildData.minute + ":" + buildData.second);
+
         dataManager.SetBuildData(buildData);
-        StartCoroutine(uiManager.BuildTimeCheck());
+        if (loadingManager.CurrentScene == GameManager.Scene.Loading)
+        {
+            loadingManager.dataCheck[(int)ServerPacketId.BuildData - 4] = true;
+        }
+        else if (loadingManager.CurrentScene == GameManager.Scene.Wait)
+        {
+            StartCoroutine(uiManager.BuildTimeCheck());
+        }
     }
 
     public void CreateAccount(string Id, string Pw)
@@ -291,11 +309,17 @@ public class NetworkManager : MonoBehaviour
 
     public void BuildBuilding(BuildingId Id)
     {
-        Build build = new Build((int) Id);
+        Build build = new Build(Id);
         BuildPacket buildPacket = new BuildPacket(build);
         byte[] msg = CreatePacket(buildPacket, ClientPacketId.Build);
 
         sendMsg.Enqueue(msg);
+    }
+
+    public void BuildComplete()
+    {
+        DataRequest(ClientPacketId.BuildComplete);
+        DataRequest(ClientPacketId.BuildingDataRequest);
     }
 
     byte[] CreateHeader<T>(IPacket<T> data, ClientPacketId Id)

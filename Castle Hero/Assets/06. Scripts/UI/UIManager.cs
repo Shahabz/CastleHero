@@ -83,7 +83,9 @@ public class UIManager : MonoBehaviour
     public Text nextLevel;
     public Text nextLevelExplanation;
     public Text buildCost;
+    public Text buildName;
     public Text buildTime;
+    public Text buildingTime;
 
     //대기씬 이미지    
     public GameObject[] equipment;
@@ -103,6 +105,7 @@ public class UIManager : MonoBehaviour
     {
         SetLoginUIObject();
         LoginSceneAddListener();
+        currentBuilding = BuildingId.None;
     }
 
     //매니저 초기화
@@ -192,7 +195,9 @@ public class UIManager : MonoBehaviour
         nextLevel = GameObject.Find("NextLevel").GetComponent<Text>();
         nextLevelExplanation = GameObject.Find("NextLevelExplanation").GetComponent<Text>();
         buildCost = GameObject.Find("BuildCost").GetComponent<Text>();
+        buildName = GameObject.Find("BuildName").GetComponent<Text>();
         buildTime = GameObject.Find("BuildTime").GetComponent<Text>();
+        buildingTime = GameObject.Find("BuildingTime").GetComponent<Text>();
 
         buildingState = GameObject.Find("BuildingState");
         buildingImage = GameObject.Find("BuildingImage");
@@ -384,8 +389,12 @@ public class UIManager : MonoBehaviour
     //건설 버튼
     public void OnClickBuildButton()
     {
-        networkManager.BuildBuilding(currentBuilding);
-        networkManager.DataRequest(ClientPacketId.BuildDataRequest);
+        if(dataManager.BuildBuilding == DataManager.buildingNum)
+        {
+            buildButton.interactable = false;
+            networkManager.BuildBuilding(currentBuilding);
+            networkManager.DataRequest(ClientPacketId.BuildDataRequest);
+        }        
     }
 
     //스크롤뷰 셋팅
@@ -547,12 +556,12 @@ public class UIManager : MonoBehaviour
     //건물 UI 셋팅
     public void SetBuilding()
     {
-        castleLevel.text = dataManager.Building[(int)BuildingId.Castle - 1].ToString();
-        mineLevel.text = dataManager.Building[(int)BuildingId.Mine - 1].ToString();
-        storageLevel.text = dataManager.Building[(int)BuildingId.Storage- 1].ToString();
-        barracksLevel.text = dataManager.Building[(int)BuildingId.Barracks - 1].ToString();
-        wallLevel.text = dataManager.Building[(int)BuildingId.Wall - 1].ToString();
-        laboratoryLevel.text = dataManager.Building[(int)BuildingId.Laboratory- 1].ToString();
+        castleLevel.text = dataManager.Building[(int)BuildingId.Castle].ToString();
+        mineLevel.text = dataManager.Building[(int)BuildingId.Mine].ToString();
+        storageLevel.text = dataManager.Building[(int)BuildingId.Storage].ToString();
+        barracksLevel.text = dataManager.Building[(int)BuildingId.Barracks].ToString();
+        wallLevel.text = dataManager.Building[(int)BuildingId.Wall].ToString();
+        laboratoryLevel.text = dataManager.Building[(int)BuildingId.Laboratory].ToString();
     }
 
     //건물 설명 창
@@ -561,25 +570,30 @@ public class UIManager : MonoBehaviour
         if(currentBuilding != Id)
         {
             buildingState.SetActive(true);
-            Building building = BuildingDatabase.Instance.buildingData[(int)Id];
+            Building building = BuildingDatabase.Instance.GetBuildingData((int)Id);
             buildingName.text = building.Name;
             buildingExplanation.text = building.Explanation;
 
-            currentLevel.text = dataManager.Building[(int)Id - 1].ToString();
+            currentLevel.text = dataManager.Building[(int)Id].ToString();
 
             if (currentLevel.text != "10")
             {
-                nextLevel.text = (dataManager.Building[(int)Id - 1] + 1).ToString();
-                nextLevelExplanation.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1]].NextLevel;
-                buildTime.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1]].BuildTime.ToString();
-                buildCost.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1]].Cost.ToString();
+                nextLevel.text = (dataManager.Building[(int)Id] + 1).ToString();
+                nextLevelExplanation.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id]].NextLevel;
+                buildingTime.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id]].BuildTime.ToString();
+                buildCost.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id]].Cost.ToString();
             }
             else
             {
                 nextLevel.text = "최대레벨";
-                nextLevelExplanation.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1] - 1].NextLevel;
-                buildTime.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1] - 1].BuildTime.ToString();
-                buildCost.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id - 1] - 1].Cost.ToString();
+                nextLevelExplanation.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id] - 1].NextLevel;
+                buildingTime.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id] - 1].BuildTime.ToString();
+                buildCost.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id] - 1].Cost.ToString();
+                buildButton.interactable = false;
+            }
+
+            if(dataManager.BuildBuilding != DataManager.buildingNum)
+            {
                 buildButton.interactable = false;
             }
 
@@ -593,11 +607,31 @@ public class UIManager : MonoBehaviour
         while (dataManager.BuildBuilding != -1)
         {
             yield return new WaitForFixedUpdate();
+            if(currentBuilding!= BuildingId.None)
+            {
+                buildName.text = BuildingDatabase.Instance.buildingData[(int)currentBuilding].Name;
+            }
+            else
+            {
+                buildName.text = "None";
+            }
+            
+
             int currentBuild = dataManager.BuildBuilding;
             int level = dataManager.Building[currentBuild];
+            TimeSpan difTime = dataManager.BuildTime - DateTime.Now;
+            TimeSpan newTime = new TimeSpan(difTime.Days, difTime.Hours, difTime.Minutes, difTime.Seconds);
+            buildTime.text = newTime.ToString();
 
-            buildTime.text = (dataManager.BuildTime.ToString());
-            //BuildingDatabase.Instance.buildingData[currentBuild + 1].BuildingData[level].BuildTime).ToString()
+            if(difTime.TotalSeconds < 0)
+            {
+                buildTime.text = "00:00:00";
+                networkManager.BuildComplete();
+                dataManager.BuildBuilding = 6;
+                dataManager.BuildTime = DateTime.Now;
+                SetBuildingState(currentBuilding);
+                break;
+            }
         }
     }
          

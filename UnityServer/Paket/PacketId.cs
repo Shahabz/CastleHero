@@ -17,6 +17,7 @@
     Build,
     BuildCancel,
     BuildDataRequest,
+    BuildComplete,
 }
 
 public enum ServerPacketId

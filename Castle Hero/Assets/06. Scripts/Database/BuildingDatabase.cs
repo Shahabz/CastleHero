@@ -1,15 +1,16 @@
-﻿using System;
+﻿using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 public enum BuildingId
 {
-    None = 0,
     Castle,
     Mine,
     Storage,
     Barracks,
     Wall,
     Laboratory,
+    None,
 }
 
 class BuildingDatabase
@@ -34,8 +35,6 @@ class BuildingDatabase
     public void InitializeBuildingDatabase()
     {
         buildingData = new List<Building>();
-
-        buildingData.Add(new Building());
 
         buildingData.Add(new Building(BuildingId.Castle, "Castle", "영웅이 거주하는 성이다. 다른 건물들을 업그레이드 할 수 있다.", 10));
         buildingData[(int)BuildingId.Castle].AddLevelData(1, new TimeSpan(0, 3, 0), 500, "광산, 저장소, 병영, 성벽, 연구소 1레벨 건설 가능");
@@ -99,6 +98,19 @@ class BuildingDatabase
         buildingData[(int)BuildingId.Laboratory].AddLevelData(9, new TimeSpan(48, 0, 0), 614400, "병력 9레벨 강화 가능");
         buildingData[(int)BuildingId.Laboratory].AddLevelData(10, new TimeSpan(2, 0, 0), 38400, "병력 10레벨 강화 가능");
     }
+
+    public Building GetBuildingData(int Id)
+    {
+        for(int i=0; i< buildingData.Count; i++)
+        {
+            if((int)buildingData[i].ID == Id)
+            {
+                return buildingData[i];
+            }
+        }
+
+        return null;
+    }
 }
 
 public class Building
@@ -117,7 +129,7 @@ public class Building
 
     public Building()
     {
-        Id = BuildingId.None;
+        Id = BuildingId.Castle;
         name = "";
         explanation = "";
         maxLevel = 0;
@@ -136,6 +148,20 @@ public class Building
     public void AddLevelData(int newLevel, TimeSpan newBuildTime, int newCost, string newNextLevel)
     {
         buildingData.Add(new BuildingLevelData(newLevel, newBuildTime, newCost, newNextLevel));
+    }
+
+    public BuildingLevelData GetLevelData(int newLevel)
+    {
+        for(int i = 0; i< buildingData.Count; i++)
+        {
+            
+
+            if(buildingData[i].Level == newLevel)
+            {
+                return buildingData[i];
+            }
+        }
+        return null;
     }
 }
 

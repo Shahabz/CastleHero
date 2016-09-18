@@ -6,13 +6,16 @@ using System.Runtime.Serialization.Formatters.Binary;
 public class Database
 {
     Hashtable accountData;
+    Hashtable userData;
     FileStream fs;
     BinaryFormatter bin;
     
     public Hashtable AccountData { get { return accountData; } }
+    public Hashtable UserData { get { return userData;}}
     public const string accountDataFile = "AccountData.data";
 
     /*
+    아이디, 비밀번호 파일 : AccountData.data
     유저 데이터 파일 : UserData.data
     맵 데이터 파일 : MapData.data    
     */
@@ -31,6 +34,7 @@ public class Database
             accountData = new Hashtable();
         }
 
+        userData = new Hashtable();
         //worldMap Data
     }
 
@@ -122,17 +126,36 @@ public class Database
 
     public UserData GetAccountData(string Id)
     {
-        fs.Close();
-        fs = new FileStream(Id + ".data", FileMode.Open);
-
-        if(fs.Length > 0)
+        if (userData.Contains(Id))
         {
-            return (UserData)bin.Deserialize(fs);
+            Console.WriteLine("기존 데이터 로드");
+            return (UserData) userData[Id];
         }
         else
         {
-            return null;
-        }
+            Console.WriteLine("새로운 데이터 로드");
+            fs.Close();
+            try
+            {
+                fs = new FileStream(Id + ".data", FileMode.Open);
+            }
+            catch
+            {
+                Console.WriteLine("Database::GetAccountData.FileOpen 에러");
+                return null;
+            }            
+
+            if (fs.Length > 0)
+            {
+                UserData newUserData = (UserData)bin.Deserialize(fs);
+                userData.Add(Id, newUserData);
+                return newUserData;
+            }
+            else
+            {
+                return null;
+            }
+        }        
     }
 
 }
