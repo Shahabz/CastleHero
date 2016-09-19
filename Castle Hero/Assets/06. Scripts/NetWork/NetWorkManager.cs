@@ -129,11 +129,11 @@ public class NetworkManager : MonoBehaviour
         if (msg[0] == 1)
         {
             uiManager.createAccountPanel.SetActive(false);
-            StartCoroutine(uiManager.DialogCtrl(1.0f, "가입성공"));
+            StartCoroutine(UIManager.DialogCtrl(1.0f, "가입성공"));
         }
         else
         {
-            StartCoroutine(uiManager.DialogCtrl(1.0f, "가입실패"));
+            StartCoroutine(UIManager.DialogCtrl(1.0f, "가입실패"));
         }
     }
 
@@ -142,11 +142,11 @@ public class NetworkManager : MonoBehaviour
         if (msg[0] == 1)
         {
             uiManager.deleteAccountPanel.SetActive(false);
-            StartCoroutine(uiManager.DialogCtrl(1.0f, "탈퇴성공"));
+            StartCoroutine(UIManager.DialogCtrl(1.0f, "탈퇴성공"));
         }
         else
         {
-            StartCoroutine(uiManager.DialogCtrl(1.0f, "탈퇴실패"));
+            StartCoroutine(UIManager.DialogCtrl(1.0f, "탈퇴실패"));
         }
     }
 
@@ -156,11 +156,11 @@ public class NetworkManager : MonoBehaviour
         {
             dataManager.SetId(uiManager.loginId.text);
             StartCoroutine(loadingManager.LoadScene(GameManager.Scene.Login, GameManager.Scene.Wait, 1.0f));
-            StartCoroutine(uiManager.DialogCtrl(1.0f, "로그인성공"));
+            StartCoroutine(UIManager.DialogCtrl(1.0f, "로그인성공"));
         }
         else
         {
-            StartCoroutine(uiManager.DialogCtrl(1.0f, "로그인실패"));
+            StartCoroutine(UIManager.DialogCtrl(1.0f, "로그인실패"));
         }
     }
 
@@ -212,9 +212,8 @@ public class NetworkManager : MonoBehaviour
         }
         else if(loadingManager.CurrentScene == GameManager.Scene.Wait)
         {
-            uiManager.SetBuilding();
+            uiManager.BuildingUIManager.SetBuilding();
         }
-        
     }
 
     void OnReceivedUpgradeData(byte[] msg)
@@ -248,9 +247,6 @@ public class NetworkManager : MonoBehaviour
     {
         BuildDataPacket buildDataPacket = new BuildDataPacket(msg);
         BuildData buildData = buildDataPacket.GetData();
-
-        Debug.Log("건설Id : " + buildData.Id);
-        Debug.Log("건설시간 : " + buildData.year + "." + buildData.month + "." + buildData.day + "." + buildData.hour + ":" + buildData.minute + ":" + buildData.second);
 
         dataManager.SetBuildData(buildData);
         if (loadingManager.CurrentScene == GameManager.Scene.Loading)

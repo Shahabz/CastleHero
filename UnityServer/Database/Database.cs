@@ -46,7 +46,7 @@ public class Database
             {
                 accountData.Add(Id, new LoginData(Id, Pw));
                 FileSave(accountDataFile, accountData);
-                FileSave(Id + ".data", new UserData(Id, Pw));
+                FileSave(Id + ".data", new UserData(Id));
                 
                 return true;
             }
@@ -69,7 +69,7 @@ public class Database
         {
             if (accountData.Contains(Id))
             {
-                if (((UserData)accountData[Id]).PW == Pw)
+                if (((LoginData)accountData[Id]).PW == Pw)
                 {
                     accountData.Remove(Id);
                     FileSave(accountDataFile, accountData);
@@ -93,9 +93,54 @@ public class Database
         }
         catch
         {
-            Console.WriteLine("Database::AddUserData.Add 에러");
+            Console.WriteLine("Database::DeleteAccountData.Contains 에러");
             return false;
         }
+    }
+    
+    public UserData GetAccountData(string Id)
+    {
+        if (userData.Contains(Id))
+        {
+            Console.WriteLine("기존 데이터 로드");
+            return (UserData) userData[Id];
+        }
+        else
+        {
+            Console.WriteLine("새로운 데이터 로드");
+            return AddUserData(Id);
+        }
+    }
+
+    public UserData AddUserData(string Id)
+    {
+        fs.Close();
+        //파일이 있으면 가져오고 없으면 새로 만듬
+        try
+        {
+            fs = new FileStream(Id + ".data", FileMode.OpenOrCreate);
+        }
+        catch
+        {
+            Console.WriteLine("Database::GetAccountData.FileOpenOrCreate 에러");
+        }
+
+        UserData newUserData;
+
+        //원래 있는 경우에는 그 파일의 데이터를 가져오고
+        if (fs.Length > 0)
+        {
+            newUserData = (UserData)bin.Deserialize(fs);
+        }
+        //없을 경우에는 새로 만들어서 가져옴
+        else
+        {
+            newUserData = new UserData(Id);
+        }
+
+        //데이터를 유저리스트 테이블에 추가한 뒤 반환
+        userData.Add(Id, newUserData);
+        return newUserData;
     }
 
     public bool FileSave(string path, object data)
@@ -110,7 +155,7 @@ public class Database
             Console.WriteLine("Database::FileSave.FileMode.Create 에러");
             return false;
         }
-        
+
         try
         {
             bin.Serialize(fs, data);
@@ -122,40 +167,6 @@ public class Database
         }
 
         return true;
-    }
-
-    public UserData GetAccountData(string Id)
-    {
-        if (userData.Contains(Id))
-        {
-            Console.WriteLine("기존 데이터 로드");
-            return (UserData) userData[Id];
-        }
-        else
-        {
-            Console.WriteLine("새로운 데이터 로드");
-            fs.Close();
-            try
-            {
-                fs = new FileStream(Id + ".data", FileMode.Open);
-            }
-            catch
-            {
-                Console.WriteLine("Database::GetAccountData.FileOpen 에러");
-                return null;
-            }            
-
-            if (fs.Length > 0)
-            {
-                UserData newUserData = (UserData)bin.Deserialize(fs);
-                userData.Add(Id, newUserData);
-                return newUserData;
-            }
-            else
-            {
-                return null;
-            }
-        }        
     }
 
 }

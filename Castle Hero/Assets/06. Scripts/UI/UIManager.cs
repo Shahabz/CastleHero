@@ -8,12 +8,17 @@ public class UIManager : MonoBehaviour
     [SerializeField] NetworkManager networkManager;
     [SerializeField] DataManager dataManager;
 
+    UnitUIManager unitUIManager;
+    public UnitUIManager UnitUIManager { get { return unitUIManager; } }
+    BuildingUIManager buildingUIManager;
+    public BuildingUIManager BuildingUIManager { get { return buildingUIManager; } }
+
     //로그인씬 패널
     public GameObject loginPanel;
     public GameObject createAccountPanel;
     public GameObject deleteAccountPanel;
     public GameObject lastChoicePanel;
-    public GameObject dialog;
+    public static GameObject dialog;
 
     //대기씬 패널
     public GameObject unitScroll;
@@ -23,6 +28,7 @@ public class UIManager : MonoBehaviour
     public GameObject itemPanel;
     public GameObject equipmentPanel;
     public GameObject inventoryPanel;
+    public GameObject unitPanel;
     public GameObject buildingPanel;
 
     //로그인씬 버튼
@@ -45,8 +51,8 @@ public class UIManager : MonoBehaviour
     public Button equipmentButton;
     public Button skillButton;
     public Button unitButton;
+    public Button createUnitButton;
     public Button buildingButton;
-    public Button buildButton;
     public Button upgradeButton;
     public Button quitButton;
 
@@ -62,6 +68,8 @@ public class UIManager : MonoBehaviour
     public Text castleState;
     public Text heroState;
     public Text resource;
+    public Text buildName;
+    public Text buildTime;
     public Text level;
     public Text experience;
     public Text health;
@@ -71,27 +79,11 @@ public class UIManager : MonoBehaviour
     public Text magicDefense;
     public Text moveSpeed;
     public Text attackSpeed;
-    public Text castleLevel;
-    public Text mineLevel;
-    public Text storageLevel;
-    public Text barracksLevel;
-    public Text wallLevel;
-    public Text laboratoryLevel;
-    public Text buildingName;
-    public Text buildingExplanation;
-    public Text currentLevel;
-    public Text nextLevel;
-    public Text nextLevelExplanation;
-    public Text buildCost;
-    public Text buildName;
-    public Text buildTime;
-    public Text buildingTime;
 
-    //대기씬 이미지    
+
+    //대기씬 이미지
     public GameObject[] equipment;
     public GameObject[] inventory;
-    public GameObject buildingState;
-    public GameObject buildingImage;
 
     public BuildingId currentBuilding;
 
@@ -113,6 +105,18 @@ public class UIManager : MonoBehaviour
     {
         networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
         dataManager = GameObject.FindGameObjectWithTag("DataManager").GetComponent<DataManager>();
+
+        unitUIManager = new UnitUIManager();
+        unitUIManager.ManagerInitialize();
+        buildingUIManager = new BuildingUIManager();
+        buildingUIManager.ManagerInitialize();
+    }
+
+    //UI매니저 초기화
+    public void SetUIManager()
+    {
+        unitUIManager.SetUIObject();        
+        buildingUIManager.SetUIObject();
     }
 
     //로그인씬 패널, 버튼, 텍스트 설정
@@ -159,6 +163,7 @@ public class UIManager : MonoBehaviour
         itemPanel = GameObject.Find("ItemPanel");
         equipmentPanel = GameObject.Find("EquipmentPanel");
         inventoryPanel = GameObject.Find("InventoryPanel");
+        unitPanel = GameObject.Find("UnitPanel");
         buildingPanel = GameObject.Find("BuildingPanel");
 
         logoutButton = GameObject.Find("LogoutButton").GetComponent<Button>();
@@ -167,13 +172,14 @@ public class UIManager : MonoBehaviour
         skillButton = GameObject.Find("SkillButton").GetComponent<Button>();
         unitButton = GameObject.Find("UnitButton").GetComponent<Button>();
         buildingButton = GameObject.Find("BuildingButton").GetComponent<Button>();
-        buildButton = GameObject.Find("BuildButton").GetComponent<Button>();
         upgradeButton = GameObject.Find("UpgradeButton").GetComponent<Button>();
         quitButton = GameObject.Find("QuitButton").GetComponent<Button>();
 
         castleState = GameObject.Find("CastleState").GetComponent<Text>();
         heroState = GameObject.Find("HeroState").GetComponent<Text>();
         resource = GameObject.Find("Resource").GetComponent<Text>();
+        buildName = GameObject.Find("BuildName").GetComponent<Text>();
+        buildTime = GameObject.Find("BuildTime").GetComponent<Text>();
         level = GameObject.Find("Level").GetComponent<Text>();
         experience = GameObject.Find("Experience").GetComponent<Text>();
         health = GameObject.Find("Health").GetComponent<Text>();
@@ -183,33 +189,15 @@ public class UIManager : MonoBehaviour
         magicDefense = GameObject.Find("MagicDefense").GetComponent<Text>();
         moveSpeed = GameObject.Find("MoveSpeed").GetComponent<Text>();
         attackSpeed = GameObject.Find("AttackSpeed").GetComponent<Text>();
-        castleLevel = GameObject.Find("CastleLevel").GetComponent<Text>();
-        mineLevel = GameObject.Find("MineLevel").GetComponent<Text>();
-        storageLevel = GameObject.Find("StorageLevel").GetComponent<Text>();
-        barracksLevel = GameObject.Find("BarracksLevel").GetComponent<Text>();
-        wallLevel = GameObject.Find("WallLevel").GetComponent<Text>();
-        laboratoryLevel = GameObject.Find("LaboratoryLevel").GetComponent<Text>();
-        buildingName = GameObject.Find("BuildingName").GetComponent<Text>();
-        buildingExplanation = GameObject.Find("BuildingExplanation").GetComponent<Text>();
-        currentLevel = GameObject.Find("CurrentLevel").GetComponent<Text>();
-        nextLevel = GameObject.Find("NextLevel").GetComponent<Text>();
-        nextLevelExplanation = GameObject.Find("NextLevelExplanation").GetComponent<Text>();
-        buildCost = GameObject.Find("BuildCost").GetComponent<Text>();
-        buildName = GameObject.Find("BuildName").GetComponent<Text>();
-        buildTime = GameObject.Find("BuildTime").GetComponent<Text>();
-        buildingTime = GameObject.Find("BuildingTime").GetComponent<Text>();
-
-        buildingState = GameObject.Find("BuildingState");
-        buildingImage = GameObject.Find("BuildingImage");
 
         CreateEquipmentSlot();
         CreateInventorySlot();
-
-        informationPanel.SetActive(false);
+        
         statusPanel.SetActive(false);
         itemPanel.SetActive(false);
-        buildingState.SetActive(false);
+        unitPanel.SetActive(false);
         buildingPanel.SetActive(false);
+        informationPanel.SetActive(false);
     }
 
     //로그인씬 버튼 이벤트 설정
@@ -233,11 +221,12 @@ public class UIManager : MonoBehaviour
     public void WaitSceneAddListener()
     {
         logoutButton.onClick.AddListener(() => OnClickLogoutButton());
-        statusButton.onClick.AddListener(() => OnCLickStatusButton());
-        quitButton.onClick.AddListener(() => OnClickQuitButton());
+        statusButton.onClick.AddListener(() => OnCLickStatusButton());        
         equipmentButton.onClick.AddListener(() => OnClickItemButton());
+        unitButton.onClick.AddListener(() => OnClickUnitButton());
         buildingButton.onClick.AddListener(() => OnClickBuildingButton());
-        buildButton.onClick.AddListener(() => OnClickBuildButton());
+        quitButton.onClick.AddListener(() => OnClickQuitButton());
+        buildingUIManager.OnClickAddListener();
     }
 
     //가입하기버튼
@@ -342,10 +331,7 @@ public class UIManager : MonoBehaviour
     {
         if(currentPanel != statusPanel)
         {
-            if (currentPanel != null)
-            {
-                currentPanel.SetActive(false);
-            }
+            SetPanel();
             informationPanel.SetActive(true);
             statusPanel.SetActive(true);
             currentPanel = statusPanel;
@@ -358,14 +344,24 @@ public class UIManager : MonoBehaviour
     {
         if(currentPanel != itemPanel)
         {
-            if (currentPanel != null)
-            {
-                currentPanel.SetActive(false);
-            }
+            SetPanel();
             informationPanel.SetActive(true);
             itemPanel.SetActive(true);
             currentPanel = itemPanel;
             SetItemSlot();
+        }
+    }
+
+    //유닛 버튼
+    public void OnClickUnitButton()
+    {
+        if (currentPanel != unitPanel)
+        {
+            SetPanel();
+            informationPanel.SetActive(true);
+            unitPanel.SetActive(true);
+            currentPanel = unitPanel;
+            unitUIManager.SetUnitLevel();
         }
     }
 
@@ -374,27 +370,30 @@ public class UIManager : MonoBehaviour
     {
         if(currentPanel != buildingPanel)
         {
-            if(currentPanel != null)
-            {
-                currentPanel.SetActive(false);
-            }
-
+            SetPanel();
             informationPanel.SetActive(true);
             buildingPanel.SetActive(true);
             currentPanel = buildingPanel;
-            SetBuilding();
+            buildingUIManager.SetBuilding();
         }
     }
 
-    //건설 버튼
-    public void OnClickBuildButton()
+    //패널 끄기
+    public void SetPanel()
     {
-        if(dataManager.BuildBuilding == DataManager.buildingNum)
+        if (currentPanel != null)
         {
-            buildButton.interactable = false;
-            networkManager.BuildBuilding(currentBuilding);
-            networkManager.DataRequest(ClientPacketId.BuildDataRequest);
-        }        
+            if (currentPanel == buildingPanel)
+            {
+                buildingUIManager.buildingState.SetActive(false);
+            }
+            else if (currentPanel == unitPanel)
+            {
+                unitUIManager.unitState.SetActive(false);
+            }
+
+            currentPanel.SetActive(false);
+        }
     }
 
     //스크롤뷰 셋팅
@@ -476,6 +475,23 @@ public class UIManager : MonoBehaviour
             castleState.text = "공격당함";
         }
     }
+    
+    //건설 상태 셋팅
+    public void SetBuildState()
+    {
+        Building building = BuildingDatabase.Instance.GetBuildingData(dataManager.BuildBuilding);
+
+        if (building.ID != BuildingId.None)
+        {
+            buildName.text = building.Name;
+            buildTime.text = BuildingDatabase.Instance.buildingData[dataManager.BuildBuilding].BuildingData[dataManager.Building[(int)currentBuilding]].BuildTime.ToString();
+        }
+        else
+        {
+            buildName.text = "None";
+            buildTime.text = "00:00:00";
+        }        
+    }
 
     //자원 셋팅
     public void SetResource()
@@ -553,69 +569,20 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    //건물 UI 셋팅
-    public void SetBuilding()
-    {
-        castleLevel.text = dataManager.Building[(int)BuildingId.Castle].ToString();
-        mineLevel.text = dataManager.Building[(int)BuildingId.Mine].ToString();
-        storageLevel.text = dataManager.Building[(int)BuildingId.Storage].ToString();
-        barracksLevel.text = dataManager.Building[(int)BuildingId.Barracks].ToString();
-        wallLevel.text = dataManager.Building[(int)BuildingId.Wall].ToString();
-        laboratoryLevel.text = dataManager.Building[(int)BuildingId.Laboratory].ToString();
-    }
-
-    //건물 설명 창
-    public void SetBuildingState(BuildingId Id)
-    {
-        if(currentBuilding != Id)
-        {
-            buildingState.SetActive(true);
-            Building building = BuildingDatabase.Instance.GetBuildingData((int)Id);
-            buildingName.text = building.Name;
-            buildingExplanation.text = building.Explanation;
-
-            currentLevel.text = dataManager.Building[(int)Id].ToString();
-
-            if (currentLevel.text != "10")
-            {
-                nextLevel.text = (dataManager.Building[(int)Id] + 1).ToString();
-                nextLevelExplanation.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id]].NextLevel;
-                buildingTime.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id]].BuildTime.ToString();
-                buildCost.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id]].Cost.ToString();
-            }
-            else
-            {
-                nextLevel.text = "최대레벨";
-                nextLevelExplanation.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id] - 1].NextLevel;
-                buildingTime.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id] - 1].BuildTime.ToString();
-                buildCost.text = BuildingDatabase.Instance.buildingData[(int)Id].BuildingData[dataManager.Building[(int)Id] - 1].Cost.ToString();
-                buildButton.interactable = false;
-            }
-
-            if(dataManager.BuildBuilding != DataManager.buildingNum)
-            {
-                buildButton.interactable = false;
-            }
-
-            currentBuilding = Id;
-        }        
-    }
-
     //건물 시간 체크
     public IEnumerator BuildTimeCheck()
     {
-        while (dataManager.BuildBuilding != -1)
+        while (dataManager.BuildBuilding != DataManager.buildingNum)
         {
             yield return new WaitForFixedUpdate();
-            if(currentBuilding!= BuildingId.None)
+            if (dataManager.BuildBuilding != (int) BuildingId.None)
             {
-                buildName.text = BuildingDatabase.Instance.buildingData[(int)currentBuilding].Name;
+                buildingUIManager.buildName.text = BuildingDatabase.Instance.buildingData[dataManager.BuildBuilding].Name;
             }
             else
             {
-                buildName.text = "None";
+                buildingUIManager.buildName.text = "None";
             }
-            
 
             int currentBuild = dataManager.BuildBuilding;
             int level = dataManager.Building[currentBuild];
@@ -623,25 +590,24 @@ public class UIManager : MonoBehaviour
             TimeSpan newTime = new TimeSpan(difTime.Days, difTime.Hours, difTime.Minutes, difTime.Seconds);
             buildTime.text = newTime.ToString();
 
-            if(difTime.TotalSeconds < 0)
+            if (difTime.TotalSeconds < 0)
             {
-                buildTime.text = "00:00:00";
                 networkManager.BuildComplete();
                 dataManager.BuildBuilding = 6;
                 dataManager.BuildTime = DateTime.Now;
-                SetBuildingState(currentBuilding);
+                SetBuildState();
                 break;
             }
         }
     }
-         
+
     //게임종료
     public void OnClickExitButton()
     {
         Application.Quit();
     }
 
-    public IEnumerator DialogCtrl(float value, string text)
+    public static IEnumerator DialogCtrl(float value, string text)
     {
         if (!dialog.activeSelf)
         {

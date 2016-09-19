@@ -1,19 +1,18 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public class BuildingUI : MonoBehaviour, IPointerDownHandler
 {
-    UIManager uiManager;
+    BuildingUIManager buildingUIManager;
     public BuildingId Id;
 
     void Start()
     {
-        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
+        buildingUIManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>().BuildingUIManager;
     }
 
     public void OnPointerDown(PointerEventData eventdata)
     {
-        uiManager.SetBuildingState(Id);
+        buildingUIManager.SetBuildingState(Id);
     }
 }

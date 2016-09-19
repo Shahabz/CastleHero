@@ -20,7 +20,6 @@ public enum HeroState
 public class UserData
 {
     string Id;
-    string Pw;
     int heroId;
     int heroLevel;
     int[] equipment;
@@ -42,7 +41,6 @@ public class UserData
     CastleState castleState;
 
     public string ID { get { return Id; } }
-    public string PW { get { return Pw; } }
     public int HeroId { get { return heroId; } }
     public int HeroLevel { get { return heroLevel; } }
     public int[] Equipment { get { return equipment; } }
@@ -111,10 +109,9 @@ public class UserData
     public const int unitNum = 5;
     public const int buildingNum = 6;
 
-    public UserData(string newId, string newPw)
+    public UserData(string newId)
     {
         Id = newId;
-        Pw = newPw;
         heroId = 1;
         heroLevel = 1;
         equipment = new int[equipNum];
@@ -137,6 +134,7 @@ public class UserData
             unit[i] = new Unit();
             createUnit[i] = new Unit();
             attackUnit[i] = new Unit();
+            upgrade[i] = 1;
         }
     }
 
@@ -247,13 +245,14 @@ public class UserData
         buildTime = newBuildTime;
     }
 
-    //건물 취소
+    //건설 취소
     public void BuildCancel()
     {
         buildBuilding = buildingNum;
         buildTime = DateTime.Now;
     }
 
+    //건설 완료
     public void Buildcomplete()
     {
         building[buildBuilding]++;

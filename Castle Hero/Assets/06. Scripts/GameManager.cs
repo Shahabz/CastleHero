@@ -15,8 +15,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] LoadingManager loadingManager;
     [SerializeField] DataManager dataManager;
 
-    
-
     void Awake()
     {
         tag = "GameManager";

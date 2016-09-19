@@ -22,6 +22,7 @@ class DataManager : MonoBehaviour
     HeroDatabase heroDatabase;
     ItemDatabase itemDatabase;
     BuildingDatabase buildingDatabase;
+    UnitDatabase unitDatabase;
 
     public const int equipNum = 7;
     public const int invenNum = 16;
@@ -82,6 +83,8 @@ class DataManager : MonoBehaviour
         itemDatabase.InitializeItemDatabase();
         buildingDatabase = BuildingDatabase.Instance;
         buildingDatabase.InitializeBuildingDatabase();
+        unitDatabase = UnitDatabase.Instance;
+        unitDatabase.InitializeUnitDatabase();
 
         Id = "";
         heroData = new HeroBaseData();
@@ -94,6 +97,8 @@ class DataManager : MonoBehaviour
         inventoryNum = new int[invenNum];
         skill = new int[skillNum];
         unit = new Unit[unitNum];
+        createUnit = new Unit[unitNum];
+        attackUnit = new Unit[unitNum];
         building = new int[buildingNum];
         upgrade = new int[unitNum];
 
@@ -189,7 +194,7 @@ class DataManager : MonoBehaviour
     {
         buildBuilding = buildData.Id;
 
-        if(buildBuilding != buildingNum)
+        if (buildBuilding != buildingNum)
         {
             int level = building[buildData.Id] + 1;
             buildTime = new DateTime(buildData.year, buildData.month, buildData.day, buildData.hour, buildData.minute, buildData.second) + buildingDatabase.GetBuildingData(buildBuilding).GetLevelData(level).BuildTime;
@@ -198,7 +203,5 @@ class DataManager : MonoBehaviour
         {
             buildTime = DateTime.Now;
         }
-		
-        Debug.Log("빌드 데이터 : " + buildData.Id + " , " + buildTime.ToString());
     }
 }

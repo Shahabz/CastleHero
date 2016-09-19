@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 public enum BuildingId
@@ -97,6 +96,8 @@ class BuildingDatabase
         buildingData[(int)BuildingId.Laboratory].AddLevelData(8, new TimeSpan(16, 0, 0), 307200, "병력 8레벨 강화 가능");
         buildingData[(int)BuildingId.Laboratory].AddLevelData(9, new TimeSpan(48, 0, 0), 614400, "병력 9레벨 강화 가능");
         buildingData[(int)BuildingId.Laboratory].AddLevelData(10, new TimeSpan(2, 0, 0), 38400, "병력 10레벨 강화 가능");
+
+        buildingData.Add(new Building(BuildingId.None, "None", "아무것도 아닌 건물이다.", 0));
     }
 
     public Building GetBuildingData(int Id)
@@ -109,7 +110,7 @@ class BuildingDatabase
             }
         }
 
-        return null;
+        return buildingData[(int)BuildingId.None];
     }
 }
 
@@ -170,26 +171,26 @@ public class BuildingLevelData
     int level;
     TimeSpan buildTime;
     int cost;
-    string nextLevel;
+    string explanation;
 
     public int Level { get { return level; } }
     public TimeSpan BuildTime { get { return buildTime; } }
     public int Cost { get { return cost; } }
-    public string NextLevel { get { return nextLevel; } }
+    public string Explanation{ get { return explanation; } }
 
     public BuildingLevelData()
     {
         level = 0;
         buildTime = new TimeSpan();
         cost = 0;
-        nextLevel = "";
+        explanation = "";
     }
 
-    public BuildingLevelData(int newLevel, TimeSpan newBuildTime, int newCost, string newNextLevel)
+    public BuildingLevelData(int newLevel, TimeSpan newBuildTime, int newCost, string newExplanation)
     {
         level = newLevel;
         buildTime = newBuildTime;
         cost = newCost;
-        nextLevel = newNextLevel;
+        explanation = newExplanation;
     }
 }

@@ -210,13 +210,14 @@ public class LoadingManager : MonoBehaviour
     {
         if (level == (int)GameManager.Scene.Login)
         {
-
+            
         }
 
         if (level == (int)GameManager.Scene.Wait)
         {
-            uiManager.SetUnitScrollView();
+            //uiManager.SetUnitScrollView();
             uiManager.SetState();
+            uiManager.SetUIManager();
             uiManager.SetWaitUIObject();
             uiManager.WaitSceneAddListener();
             StartCoroutine(uiManager.BuildTimeCheck());
