@@ -39,6 +39,10 @@ class DataManager : MonoBehaviour
     [SerializeField] Unit[] unit;
     [SerializeField] Unit[] createUnit;
     [SerializeField] Unit[] attackUnit;
+    [SerializeField] int unitKind;
+    [SerializeField] int createUnitKind;
+    [SerializeField] int attackUnitKind;
+    [SerializeField] DateTime unitCreateTime;
     [SerializeField] int[] building;
     [SerializeField] int buildBuilding;
     [SerializeField] DateTime buildTime;
@@ -56,6 +60,52 @@ class DataManager : MonoBehaviour
     public Unit[] Unit { get { return unit; } }
     public Unit[] CreateUnit { get { return createUnit; } }
     public Unit[] AttackUnit { get { return attackUnit; } }
+    public int UnitKind
+    {
+        get
+        {
+            unitKind = 0;
+
+            for (int i = 0; i < unitNum; i++)
+            {
+                if (unit[i].num != 0)
+                    unitKind++;
+            }
+            return unitKind;
+        }
+    }
+    public int CreateUnitKind
+    {
+        get
+        {
+            createUnitKind = 0;
+
+            createUnit = new Unit[unitNum];
+            for (int i = 0; i < unitNum; i++) { createUnit[i] = new Unit(); }
+
+            for (int i = 0; i < unitNum; i++)
+            {
+                if (createUnit[i].num != 0)
+                    createUnitKind++;
+            }
+            return createUnitKind;
+        }
+    }
+    public int AttackUnitKind
+    {
+        get
+        {
+            attackUnitKind = 0;
+
+            for (int i = 0; i < unitNum; i++)
+            {
+                if (attackUnit[i].num != 0)
+                    attackUnitKind++;
+            }
+            return attackUnitKind;
+        }
+    }
+    public DateTime UnitCreateTime { get { return unitCreateTime; } set { unitCreateTime = value; } }
     public int[] Building { get { return building; } }
     public int BuildBuilding { get { return buildBuilding; } set { buildBuilding = value; } }
     public DateTime BuildTime { get { return buildTime; } set { buildTime = value; } }
@@ -196,8 +246,21 @@ class DataManager : MonoBehaviour
 
         if (buildBuilding != buildingNum)
         {
-            int level = building[buildData.Id] + 1;
-            buildTime = new DateTime(buildData.year, buildData.month, buildData.day, buildData.hour, buildData.minute, buildData.second) + buildingDatabase.GetBuildingData(buildBuilding).GetLevelData(level).BuildTime;
+            buildTime = new DateTime(buildData.year, buildData.month, buildData.day, buildData.hour, buildData.minute, buildData.second);
+        }
+        else
+        {
+            buildTime = DateTime.Now;
+        }
+    }
+
+    public void SetUnitCreateData(UnitCreateData unitCreateData)
+    {
+        createUnit = unitCreateData.unit;
+        
+        if(createUnitKind != 0)
+        {
+            unitCreateTime = new DateTime(unitCreateData.year, unitCreateData.month, unitCreateData.day, unitCreateData.hour, unitCreateData.minute, unitCreateData.second);
         }
         else
         {

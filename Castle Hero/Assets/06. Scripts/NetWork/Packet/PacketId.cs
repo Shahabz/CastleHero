@@ -31,6 +31,9 @@ public enum ClientPacketId
     BuildCancel,
     BuildDataRequest,
     BuildComplete,
+    UnitCreate,
+    UnitCreateDataRequest,
+    UnitCreateComplete,
 }
 
 public enum ServerPacketId
@@ -48,4 +51,5 @@ public enum ServerPacketId
     ResourceData,
     StateData,
     BuildData,
+    UnitCreateData,
 }

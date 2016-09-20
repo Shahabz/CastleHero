@@ -14,6 +14,8 @@ public class Database
     public Hashtable UserData { get { return userData;}}
     public const string accountDataFile = "AccountData.data";
 
+    BuildingDatabase buildingDatabase;
+
     /*
     아이디, 비밀번호 파일 : AccountData.data
     유저 데이터 파일 : UserData.data
@@ -36,6 +38,9 @@ public class Database
 
         userData = new Hashtable();
         //worldMap Data
+
+        buildingDatabase = BuildingDatabase.Instance;
+        buildingDatabase.InitializeBuildingDatabase();
     }
 
     public bool AddAccountData(string Id, string Pw)
@@ -102,12 +107,10 @@ public class Database
     {
         if (userData.Contains(Id))
         {
-            Console.WriteLine("기존 데이터 로드");
             return (UserData) userData[Id];
         }
         else
         {
-            Console.WriteLine("새로운 데이터 로드");
             return AddUserData(Id);
         }
     }

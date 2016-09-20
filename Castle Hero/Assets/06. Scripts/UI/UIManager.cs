@@ -21,7 +21,7 @@ public class UIManager : MonoBehaviour
     public static GameObject dialog;
 
     //대기씬 패널
-    public GameObject unitScroll;
+    public GameObject unitStateScroll;
     public GameObject informationPanel;
     public GameObject currentPanel;
     public GameObject statusPanel;
@@ -68,6 +68,8 @@ public class UIManager : MonoBehaviour
     public Text castleState;
     public Text heroState;
     public Text resource;
+    public Text unitCreateName;
+    public Text unitCreateTime;
     public Text buildName;
     public Text buildTime;
     public Text level;
@@ -79,7 +81,6 @@ public class UIManager : MonoBehaviour
     public Text magicDefense;
     public Text moveSpeed;
     public Text attackSpeed;
-
 
     //대기씬 이미지
     public GameObject[] equipment;
@@ -178,6 +179,8 @@ public class UIManager : MonoBehaviour
         castleState = GameObject.Find("CastleState").GetComponent<Text>();
         heroState = GameObject.Find("HeroState").GetComponent<Text>();
         resource = GameObject.Find("Resource").GetComponent<Text>();
+        unitCreateName = GameObject.Find("UnitCreateName").GetComponent<Text>();
+        unitCreateTime = GameObject.Find("UnitCreateTime").GetComponent<Text>();
         buildName = GameObject.Find("BuildName").GetComponent<Text>();
         buildTime = GameObject.Find("BuildTime").GetComponent<Text>();
         level = GameObject.Find("Level").GetComponent<Text>();
@@ -399,24 +402,24 @@ public class UIManager : MonoBehaviour
     //스크롤뷰 셋팅
     public void SetUnitScrollView()
     {
-        unitScroll = GameObject.Find("UnitScroll");
+        unitStateScroll = GameObject.Find("UnitStateScroll");
 
-        unitScroll.GetComponent<RectTransform>().localPosition = Vector3.zero;
+        unitStateScroll.GetComponent<RectTransform>().localPosition = Vector3.zero;
 
         if (dataManager.Unit.Length > 7)
         {
             float yMax = 350 + (50 * (dataManager.Unit.Length - 7));
-            unitScroll.GetComponent<RectTransform>().sizeDelta = new Vector2(200, yMax);
+            unitStateScroll.GetComponent<RectTransform>().sizeDelta = new Vector2(200, yMax);
         }
         else
         {
-            unitScroll.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 350);
+            unitStateScroll.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 350);
         }
 
         for (int i = 0; i < dataManager.Unit.Length; i++)
         {
             GameObject unit = Instantiate(Resources.Load("/Prefabs/Unit")) as GameObject;
-            unit.transform.SetParent(unitScroll.transform);
+            unit.transform.SetParent(unitStateScroll.transform);
             float posY = 100 - (i * 50);
             unit.GetComponent<RectTransform>().localPosition = new Vector3(0, posY, 0);
         }
@@ -575,24 +578,53 @@ public class UIManager : MonoBehaviour
         while (dataManager.BuildBuilding != DataManager.buildingNum)
         {
             yield return new WaitForFixedUpdate();
-            if (dataManager.BuildBuilding != (int) BuildingId.None)
+            if (dataManager.BuildBuilding != (int)BuildingId.None)
             {
-                buildingUIManager.buildName.text = BuildingDatabase.Instance.buildingData[dataManager.BuildBuilding].Name;
+                buildName.text = BuildingDatabase.Instance.buildingData[dataManager.BuildBuilding].Name;
             }
             else
             {
-                buildingUIManager.buildName.text = "None";
+                buildName.text = "None";
             }
 
-            int currentBuild = dataManager.BuildBuilding;
-            int level = dataManager.Building[currentBuild];
-            TimeSpan difTime = dataManager.BuildTime - DateTime.Now;
-            TimeSpan newTime = new TimeSpan(difTime.Days, difTime.Hours, difTime.Minutes, difTime.Seconds);
-            buildTime.text = newTime.ToString();
+            buildTime.text = (dataManager.BuildTime - DateTime.Now).Hours.ToString("00") + ":" + (dataManager.BuildTime - DateTime.Now).Minutes.ToString("00") + ":" + (dataManager.BuildTime - DateTime.Now).Seconds.ToString("00");
 
-            if (difTime.TotalSeconds < 0)
+            if (dataManager.BuildTime < DateTime.Now)
             {
                 networkManager.BuildComplete();
+                dataManager.BuildBuilding = 6;
+                dataManager.BuildTime = DateTime.Now;
+                SetBuildState();
+                break;
+            }
+        }
+    }
+
+    //유닛 생산 시간 체크
+    public IEnumerator UnitCreateTimeCheck()
+    {
+        
+
+        while (dataManager.CreateUnitKind != 0)
+        {
+            yield return new WaitForFixedUpdate();
+
+            unitCreateName.text = "";
+
+            for (int i=0; i < dataManager.CreateUnit.Length; i++)
+            {
+                if (dataManager.CreateUnit[i].Id != 0)
+                {
+                    unitCreateName.text += UnitDatabase.Instance.unitData[dataManager.CreateUnit[i].Id].Name + " x ";
+                    unitCreateName.text += dataManager.CreateUnit[i].num + ", ";
+                }
+            }
+
+            unitCreateTime.text = (dataManager.UnitCreateTime - DateTime.Now).Hours.ToString("00") + ":" + (dataManager.UnitCreateTime - DateTime.Now).Minutes.ToString("00") + ":" + (dataManager.UnitCreateTime - DateTime.Now).Seconds.ToString("00");
+
+            if (dataManager.UnitCreateTime < DateTime.Now)
+            {
+                networkManager.UnitCreateComplete();
                 dataManager.BuildBuilding = 6;
                 dataManager.BuildTime = DateTime.Now;
                 SetBuildState();

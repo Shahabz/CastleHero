@@ -94,6 +94,7 @@ public class Item
     public ItemType Type { get { return type; } }
     public string Name { get { return name; } }
     public int Gold { get { return gold; } }
+    public int Attack { get { return attack; } }
     public int Defense { get { return defense; } }
     public int MagicDefense { get { return magicDefense; } }
     public int Health { get { return health; } }

@@ -51,6 +51,8 @@ public class DataHandler
 
         Thread handleThread = new Thread(new ThreadStart(DataHandle));
         handleThread.Start();
+        Thread buildCheckThread = new Thread(new ThreadStart(BuildChecker));
+        buildCheckThread.Start();
     }
 
     public void DataHandle()
@@ -185,12 +187,13 @@ public class DataHandler
                     }
                     else
                     {
+                        Console.WriteLine("현재 접속중인 아이디입니다.");
+
                         if (CompareIP(GetSocket(accountData.Id).RemoteEndPoint.ToString(), tcpPacket.client.RemoteEndPoint.ToString()))
                         {
                             LoginUser.Remove(GetSocket(accountData.Id));
-                        }
-
-                        Console.WriteLine("현재 접속중인 아이디입니다.");
+                            Console.WriteLine("현재 접속중 해제");
+                        }                        
                         msg[0] = (byte)UnityServer.Result.Fail;
                     }
                 }
@@ -276,35 +279,10 @@ public class DataHandler
         return ServerPacketId.None;
     }
 
-    public ServerPacketId BuildBuilding(byte[] data)
-    {
-        string Id = LoginUser[tcpPacket.client];
-
-        BuildPacket buildPacket = new BuildPacket(data);
-        Build buildData = buildPacket.GetData();
-        Console.WriteLine("패킷 건물번호 :" + buildData.Id);
-
-        database.GetAccountData(Id).Build(buildData.Id, DateTime.Now);
-        database.FileSave(Id + ".data", database.GetAccountData(Id));
-
-        Console.WriteLine("아이디" + buildData.Id);
-        Console.WriteLine("짓는건물" + database.GetAccountData(Id).BuildBuilding);
-
-        return ServerPacketId.None;
-    }
-
-    public ServerPacketId BuildCancel(byte[] data)
-    {
-        string Id = LoginUser[tcpPacket.client];
-
-        database.GetAccountData(Id).BuildCancel();
-
-        return ServerPacketId.None;
-    }
-
     public ServerPacketId HeroDataRequest(byte[] data)
-    {
+    {        
         string Id = LoginUser[tcpPacket.client];
+        Console.WriteLine("유저" + Id + "영웅 데이터 요청");
         int heroId = database.GetAccountData(Id).HeroId;
         int level = database.GetAccountData(Id).HeroLevel;
 
@@ -319,6 +297,7 @@ public class DataHandler
     public ServerPacketId ItemDataRequest(byte[] data)
     {
         string Id = LoginUser[tcpPacket.client];
+        Console.WriteLine("유저" + Id + "아이템 데이터 요청");
         int[] equipment = database.GetAccountData(Id).Equipment;
         int[] inventory = database.GetAccountData(Id).InventoryId;
         int[] inventoryNum = database.GetAccountData(Id).InventoryNum;
@@ -334,6 +313,7 @@ public class DataHandler
     public ServerPacketId SkillDataRequest(byte[] data)
     {
         string Id = LoginUser[tcpPacket.client];
+        Console.WriteLine("유저" + Id + "스킬 데이터 요청");
         int[] skill = database.GetAccountData(Id).Skill;
 
         SkillData skillData = new SkillData(skill);
@@ -347,6 +327,8 @@ public class DataHandler
     public ServerPacketId UnitDataRequest(byte[] data)
     {
         string Id = LoginUser[tcpPacket.client];
+        Console.WriteLine("유저" + Id + "유닛 데이터 요청");
+
         int unitKind = database.GetAccountData(Id).UnitKind;
         int createUnitKind = database.GetAccountData(Id).CreateUnitKind;
         int attackUnitKind = database.GetAccountData(Id).AttackUnitKind;
@@ -370,6 +352,8 @@ public class DataHandler
     public ServerPacketId BuildingDataRequest(byte[] data)
     {
         string Id = LoginUser[tcpPacket.client];
+        Console.WriteLine("유저" + Id + "빌딩 데이터 요청");
+
         int[] building = database.GetAccountData(Id).Building;
 
         BuildingData buildingData = new BuildingData(building);
@@ -383,6 +367,8 @@ public class DataHandler
     public ServerPacketId UpgradeDataRequest(byte[] data)
     {
         string Id = LoginUser[tcpPacket.client];
+        Console.WriteLine("유저" + Id + "업그레이드 데이터 요청");
+
         int[] upgrade = database.GetAccountData(Id).Upgrade;
 
         UpgradeData upgradeData = new UpgradeData(upgrade);
@@ -396,6 +382,8 @@ public class DataHandler
     public ServerPacketId ResourceDataRequest(byte[] data)
     {
         string Id = LoginUser[tcpPacket.client];
+        Console.WriteLine("유저" + Id + "자원 데이터 요청");
+
         int resource = database.GetAccountData(Id).Resource;
 
         ResourceData resourceData = new ResourceData(resource);
@@ -409,6 +397,8 @@ public class DataHandler
     public ServerPacketId StateDataRequest(byte[] data)
     {
         string Id = LoginUser[tcpPacket.client];
+        Console.WriteLine("유저" + Id + "성 상태 데이터 요청");
+
         byte heroState = (byte)database.GetAccountData(Id).HState;
         byte CastleState = (byte)database.GetAccountData(Id).CState;
 
@@ -420,8 +410,34 @@ public class DataHandler
         return ServerPacketId.StateData;
     }
 
+    public ServerPacketId BuildBuilding(byte[] data)
+    {
+        string Id = LoginUser[tcpPacket.client];
+
+        BuildPacket buildPacket = new BuildPacket(data);
+        Build buildData = buildPacket.GetData();
+
+        database.GetAccountData(Id).Build(buildData.Id);
+        database.FileSave(Id + ".data", database.GetAccountData(Id));
+
+        Console.WriteLine("아이디 : " + buildData.Id);
+        Console.WriteLine("짓는건물 : " + database.GetAccountData(Id).BuildBuilding);
+
+        return ServerPacketId.None;
+    }
+
+    public ServerPacketId BuildCancel(byte[] data)
+    {
+        string Id = LoginUser[tcpPacket.client];
+
+        database.GetAccountData(Id).BuildCancel();
+
+        return ServerPacketId.None;
+    }
+
     public ServerPacketId BuildDataRequest(byte[] data)
     {
+        Console.WriteLine("건설 데이터 요청");
         string Id = LoginUser[tcpPacket.client];
 
         UserData newUserData = database.GetAccountData(Id);
@@ -450,15 +466,64 @@ public class DataHandler
     }
 
     public ServerPacketId BuildComplete(byte[] data)
-    {
+    {        
         string Id = LoginUser[tcpPacket.client];
 
-        Console.WriteLine("완료한 건물 : " + database.GetAccountData(Id).BuildBuilding);
+        Console.WriteLine("아이디 : " + Id);
+        Console.WriteLine("건설 완료 : " + database.GetAccountData(Id).BuildBuilding);
         database.GetAccountData(Id).Buildcomplete();
         database.FileSave(Id + ".data", database.GetAccountData(Id));
 
         return ServerPacketId.None;
     }
+
+    public ServerPacketId UnitCreate(byte[] data)
+    {
+        string Id = LoginUser[tcpPacket.client];
+
+        Console.WriteLine("아이디 : " + Id);        
+
+        UnitCreatePacket unitCreatePacket = new UnitCreatePacket(data);
+        UnitCreate unitCreate = unitCreatePacket.GetData();
+        database.GetAccountData(Id).UnitCreate(unitCreate);
+        database.FileSave(Id + ".data", database.GetAccountData(Id));
+
+        Console.WriteLine("유닛생산 종류 : " + unitCreate.Id + "개수 : " + unitCreate.num);
+
+        return ServerPacketId.None;
+    }
+
+    public ServerPacketId UnitCreateDataRequest(byte[] data)
+    {
+        Console.WriteLine("유닛생산 데이터 요청");
+        string Id = LoginUser[tcpPacket.client];
+
+        UserData newUserData = database.GetAccountData(Id);
+        DateTime time;
+
+        if (newUserData.CreateUnitKind != 0)
+        {
+            time = newUserData.UnitCreateTime;
+        }
+        else
+        {
+            time = DateTime.Now;
+        }
+        int kind = newUserData.CreateUnitKind;
+        Unit[] unit = newUserData.CreateUnit;
+
+        UnitCreateData unitCreateData = new UnitCreateData(time, kind, unit);
+        UnitCreateDataPacket unitCreateDataPacket = new UnitCreateDataPacket(unitCreateData);
+
+        Console.WriteLine("요청아이디 : " + Id);
+        Console.WriteLine("생산유닛 : " + newUserData.CreateUnitKind);
+        Console.WriteLine("시간 : " + time.ToString());
+
+        msg = CreatePacket(unitCreateDataPacket, ServerPacketId.UnitCreateData);
+
+        return ServerPacketId.UnitCreateData;
+    }
+
 
     public void BuildChecker()
     {
@@ -468,9 +533,16 @@ public class DataHandler
 
             foreach (KeyValuePair<Socket, string> client in LoginUser)
             {
-                if(database.GetAccountData(client.Value).BuildTime < DateTime.Now)
+                Console.WriteLine(database.GetAccountData(client.Value).BuildBuilding);
+                if(database.GetAccountData(client.Value).BuildBuilding != (int) BuildingId.None)
                 {
-                    
+                    Console.WriteLine(database.GetAccountData(client.Value).BuildTime);
+                    if (database.GetAccountData(client.Value).BuildTime < DateTime.Now)
+                    {
+                        Console.WriteLine(client.Value + "자동 건설 완료 : " + database.GetAccountData(client.Value).BuildBuilding);
+                        database.GetAccountData(client.Value).Buildcomplete();
+                        database.FileSave(client.Value + ".data", database.GetAccountData(client.Value));
+                    }
                 }
             }
         }        

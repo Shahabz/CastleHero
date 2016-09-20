@@ -31,7 +31,6 @@ public class BuildingUIManager
     public Text buildingLevel;
     public Text buildingLevelExplanation;
     public Text buildCost;
-    public Text buildName;
     public Text buildingTime;
 
     public Text currentBuildingLevel;
@@ -77,7 +76,6 @@ public class BuildingUIManager
         buildingLevel = GameObject.Find("BuildingLevel").GetComponent<Text>();
         buildingLevelExplanation = GameObject.Find("BuildingLevelExplanation").GetComponent<Text>();
         buildCost = GameObject.Find("BuildCost").GetComponent<Text>();
-        buildName = GameObject.Find("BuildName").GetComponent<Text>();
         buildingTime = GameObject.Find("BuildingTime").GetComponent<Text>();
         currentBuildingLevel = GameObject.Find("CurrentBuildingLevel").GetComponent<Text>();
         nextBuildingLevel = GameObject.Find("NextBuildingLevel").GetComponent<Text>();
@@ -120,8 +118,8 @@ public class BuildingUIManager
     {
         currentBuildingLevel.text = dataManager.Building[(int)currentBuilding].ToString();
         nextBuildingLevel.text = (dataManager.Building[(int)currentBuilding] + 1).ToString();
-        currentBuildingExplanation.text = BuildingDatabase.Instance.buildingData[(int)currentBuilding].Explanation;
-        nextBuildingExplanation.text = BuildingDatabase.Instance.buildingData[(int)currentBuilding + 1].Explanation;
+        currentBuildingExplanation.text = BuildingDatabase.Instance.buildingData[(int)currentBuilding].BuildingData[dataManager.Building[(int)currentBuilding]].Explanation;
+        nextBuildingExplanation.text = BuildingDatabase.Instance.buildingData[(int)currentBuilding].BuildingData[dataManager.Building[(int)currentBuilding] + 1].Explanation;
     }
 
     //건설 버튼

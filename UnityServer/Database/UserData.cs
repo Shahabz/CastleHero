@@ -32,6 +32,7 @@ public class UserData
     Unit[] unit;
     Unit[] createUnit;
     Unit[] attackUnit;
+    DateTime unitCreateTime;
     int[] building;
     DateTime buildTime;
     int buildBuilding;
@@ -94,6 +95,7 @@ public class UserData
             return attackUnitKind;
         }
     }
+    public DateTime UnitCreateTime { get { return unitCreateTime; } }
     public int[] Skill { get { return skill; } }
     public int[] Building { get { return building; } }
     public DateTime BuildTime { get { return buildTime; } }
@@ -168,7 +170,7 @@ public class UserData
         }
         else
         {
-            index = FindEmptySlot();
+            index = FindEmptySlot(inventoryNum);
 
             if (index != -1)
             {
@@ -187,12 +189,12 @@ public class UserData
             inventoryId[index] = 0;
     }
 
-    //아이템용 빈칸찾기
-    public int FindEmptySlot()
+    //빈칸찾기
+    public int FindEmptySlot(int[] arrange)
     {
-        for (int i = 0; i < invenNum; i++)
+        for (int i = 0; i < arrange.Length; i++)
         {
-            if(inventoryId[i] == 0)
+            if(arrange[i] == 0)
             {
                 return i;
             }
@@ -239,10 +241,10 @@ public class UserData
     }
 
     //건물건설
-    public void Build(int buildingId, DateTime newBuildTime)
+    public void Build(int buildingId)
     {
         buildBuilding = buildingId;
-        buildTime = newBuildTime;
+        buildTime = DateTime.Now + BuildingDatabase.Instance.buildingData[buildingId].GetLevelData(building[buildingId] + 1).BuildTime;
     }
 
     //건설 취소
@@ -260,7 +262,27 @@ public class UserData
         buildTime = DateTime.Now;
     }
     
-    //유닛생산, 취소
+    //유닛생산
+    public void UnitCreate(UnitCreate unitCreate)
+    {
+        int[] unit = new int[unitNum];
+
+        for (int i = 0; i < unitNum; i++)
+        {
+            unit[i] = createUnit[i].num;
+        }
+
+        int index = FindEmptySlot(unit);
+        createUnit[index].Id = unitCreate.Id;
+        createUnit[index].num = unitCreate.num;
+        unitCreateTime = DateTime.Now + MultiplyTime(UnitDatabase.Instance.unitData[unitCreate.Id].CreateTime, unitCreate.num);
+    }
+
+    public TimeSpan MultiplyTime(TimeSpan time, int num)
+    {
+        return new TimeSpan(time.Hours * num, time.Minutes * num, time.Seconds * num);
+    }
+
     //유닛공격, 복귀
 
 }

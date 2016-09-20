@@ -20,7 +20,10 @@ public class DataReceiver
 
         asyncReceiveLengthCallBack = new AsyncCallback(HandleAsyncLengthReceive);
         asyncReceiveDataCallBack = new AsyncCallback(HandleAsyncDataReceive);
+    }
 
+    public void StartDataReceive()
+    {
         AsyncData asyncData = new AsyncData(clientSock);
         clientSock.BeginReceive(asyncData.msg, 0, NetworkManager.packetLength, SocketFlags.None, asyncReceiveLengthCallBack, (object)asyncData);
     }

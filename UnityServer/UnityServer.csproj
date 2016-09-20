@@ -33,7 +33,10 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Database\BuildingDatabase.cs" />
+    <Compile Include="Database\UnitDatabase.cs" />
     <Compile Include="Paket\Client2Server\BuildPacket.cs" />
+    <Compile Include="Paket\Client2Server\UnitCreatePacket.cs" />
     <Compile Include="Paket\Server2Client\BuildDataPacket.cs" />
     <Compile Include="Paket\Server2Client\BuildingDataPacket.cs" />
     <Compile Include="Paket\Server2Client\HeroDataPacket.cs" />
@@ -41,6 +44,7 @@
     <Compile Include="Paket\Server2Client\ResourceDataPacket.cs" />
     <Compile Include="Paket\Server2Client\SkillDataPacket.cs" />
     <Compile Include="Paket\Server2Client\StateDataPacket.cs" />
+    <Compile Include="Paket\Server2Client\UnitCreateDataPacket.cs" />
     <Compile Include="Paket\Server2Client\UnitDataPacket.cs" />
     <Compile Include="Paket\Server2Client\UpgradeDataPacket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

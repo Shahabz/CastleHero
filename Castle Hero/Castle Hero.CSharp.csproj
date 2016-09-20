@@ -89,6 +89,7 @@
     <Compile Include="Assets\06. Scripts\NetWork\NetworkManager.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ClientToServer\AccountPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ClientToServer\BuildPacket.cs" />
+    <Compile Include="Assets\06. Scripts\NetWork\Packet\ClientToServer\UnitCreatePacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\IPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\PacketId.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\BuildDataPacket.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\ResourceDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\SkillDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\StateDataPacket.cs" />
+    <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\UnitCreateDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\UnitDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\UpgradeDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Serializer\HeaderSerializer.cs" />

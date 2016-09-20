@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class LoadingManager : MonoBehaviour
 {
-    public const int waitData = 9;
+    public const int waitData = 10;
 
     public bool[] dataCheck;
     [SerializeField] bool loadEnd;
@@ -73,6 +73,8 @@ public class LoadingManager : MonoBehaviour
 
     public void LoadWaitScene()
     {
+        StopAllCoroutines();
+
         dataCheck = new bool[waitData];
         InitializeDataCheck();
         loadEnd = false;
@@ -170,8 +172,19 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
+    public IEnumerator LoadUnitCreateData()
+    {
+        while (!dataCheck[(int)ServerPacketId.UnitCreateData - 4])
+        {
+            networkManager.DataRequest(ClientPacketId.UnitCreateDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
     public void LoadLoginScene()
     {
+        StopAllCoroutines();
+
         dataCheck = new bool[1];
         InitializeDataCheck();
         loadEnd = false;
@@ -213,14 +226,20 @@ public class LoadingManager : MonoBehaviour
             
         }
 
-        if (level == (int)GameManager.Scene.Wait)
+        else if (level == (int)GameManager.Scene.Wait)
         {
-            //uiManager.SetUnitScrollView();
+            uiManager.SetUnitScrollView();
             uiManager.SetState();
             uiManager.SetUIManager();
             uiManager.SetWaitUIObject();
             uiManager.WaitSceneAddListener();
             StartCoroutine(uiManager.BuildTimeCheck());
+            //StartCoroutine(uiManager.());
         }
+        else if(level == (int)GameManager.Scene.Loading)
+        {
+
+        }
+
     }
 }

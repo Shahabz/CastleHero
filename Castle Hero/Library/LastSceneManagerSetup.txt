@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/01. Scenes/01.SceneLogIn.unity
+- path: Assets/01. Scenes/03. WaitScene.unity
   isLoaded: 1
   isActive: 1

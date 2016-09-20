@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
@@ -39,10 +40,39 @@ public class NetworkManager : MonoBehaviour
 
     void Start ()
     {
-        clientSock.Connect(IPAddress.Loopback, port);
-        dataReceiver = new DataReceiver(clientSock, receiveMsg, receiveLock);
+        StartCoroutine(ServerConect());        
+    }
 
-        SetServerConnection();
+    IEnumerator ServerConect()
+    {
+        int count = 0;
+        while (count < 3)
+        {   
+            try
+            {
+                clientSock.Connect(IPAddress.Loopback, port);
+                break;
+            }
+            catch
+            {
+                Debug.Log("서버와 연결이 끊겼습니다. 실패 : " + count + "회");
+            }
+            count++;
+
+            yield return new WaitForSeconds(5f);
+        }
+
+        if (clientSock.Connected)
+        {
+            dataReceiver = new DataReceiver(clientSock, receiveMsg, receiveLock);
+            dataReceiver.StartDataReceive();
+            SetServerConnection();
+        }
+        else
+        {
+            Debug.Log("서버와 연결이 되지않아 클라이언트를 종료합니다.");
+            Application.Quit();
+        }
     }
 
     public void ManagerInitialize()
@@ -80,7 +110,15 @@ public class NetworkManager : MonoBehaviour
         HeaderSerializer.Serialize(headerData);
         byte[] msg = HeaderSerializer.GetSerializedData();
 
-        clientSock.Send(msg);
+        try
+        {
+            clientSock.Send(msg);
+        }
+        catch
+        {
+            Debug.Log("서버와의 연결이 끊겼습니다.");
+        }
+        
     }
 
     public void DataHandle()
@@ -249,6 +287,7 @@ public class NetworkManager : MonoBehaviour
         BuildData buildData = buildDataPacket.GetData();
 
         dataManager.SetBuildData(buildData);
+
         if (loadingManager.CurrentScene == GameManager.Scene.Loading)
         {
             loadingManager.dataCheck[(int)ServerPacketId.BuildData - 4] = true;
@@ -256,6 +295,19 @@ public class NetworkManager : MonoBehaviour
         else if (loadingManager.CurrentScene == GameManager.Scene.Wait)
         {
             StartCoroutine(uiManager.BuildTimeCheck());
+        }
+    }
+
+    void OnReceivedUnitCreate(byte[] msg)
+    {
+        UnitCreateDataPacket unitCreateDataPacket = new UnitCreateDataPacket(msg);
+        UnitCreateData unitCreateData = unitCreateDataPacket.GetData();
+
+        dataManager.SetUnitCreateData(unitCreateData);
+
+        if(loadingManager.CurrentScene == GameManager.Scene.Loading)
+        {
+
         }
     }
 
@@ -316,6 +368,21 @@ public class NetworkManager : MonoBehaviour
     {
         DataRequest(ClientPacketId.BuildComplete);
         DataRequest(ClientPacketId.BuildingDataRequest);
+    }
+
+    public void UnitCreate(int unitId, int unitNum)
+    {
+        UnitCreate unitCreate = new UnitCreate(unitId, unitNum);
+        UnitCreatePacket unitCreatePacket = new UnitCreatePacket(unitCreate);
+        byte[] msg = CreatePacket(unitCreatePacket, ClientPacketId.UnitCreate);
+
+        sendMsg.Enqueue(msg);
+    }
+
+    public void UnitCreateComplete()
+    {
+        DataRequest(ClientPacketId.UnitCreateComplete);
+        DataRequest(ClientPacketId.UnitDataRequest);
     }
 
     byte[] CreateHeader<T>(IPacket<T> data, ClientPacketId Id)
