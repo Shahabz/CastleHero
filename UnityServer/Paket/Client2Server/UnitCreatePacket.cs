@@ -72,7 +72,7 @@ public class UnitCreate
 
     public UnitCreate()
     {
-        Id = 0;
+        Id = (byte)UnitId.None;
         num = 0;
     }
 

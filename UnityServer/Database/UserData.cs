@@ -50,6 +50,7 @@ public class UserData
     public Unit[] Unit { get { return unit; } }
     public Unit[] CreateUnit { get { return createUnit; } }
     public Unit[] AttackUnit { get { return attackUnit; } }
+    
     public int UnitKind
     {
         get
@@ -69,9 +70,6 @@ public class UserData
         get
         {
             createUnitKind = 0;
-
-            createUnit = new Unit[unitNum];
-            for (int i = 0; i < unitNum; i++) { createUnit[i] = new Unit(); }
 
             for (int i = 0; i < unitNum; i++)
             {
@@ -140,6 +138,30 @@ public class UserData
         }
     }
 
+    public int[] GetIdArrange(Unit[] unit)
+    {
+        int[] value = new int[unitNum];
+
+        for (int i = 0; i < unitNum; i++)
+        {
+            value[i] = unit[i].Id;
+        }
+
+        return value;
+    }
+
+    public int[] GetNumArrange(Unit[] unit)
+    {
+        int[] value = new int[unitNum];
+
+        for (int i = 0; i < unitNum; i++)
+        {
+            value[i] = unit[i].num;
+        }
+
+        return value;
+    }
+
     //레벨 변경
     public void SetLevel(int newLevel)
     {
@@ -162,7 +184,7 @@ public class UserData
     //아이템 획득
     public void AddItem(int Id)
     {
-        int index = FindSlotWithId(Id);
+        int index = FindSlotWithId(InventoryId, Id);
 
         if(index != -1)
         {
@@ -170,7 +192,7 @@ public class UserData
         }
         else
         {
-            index = FindEmptySlot(inventoryNum);
+            index = FindEmptySlot(inventoryNum, 0);
 
             if (index != -1)
             {
@@ -190,11 +212,11 @@ public class UserData
     }
 
     //빈칸찾기
-    public int FindEmptySlot(int[] arrange)
+    public int FindEmptySlot(int[] arrange, int emptyIndex)
     {
         for (int i = 0; i < arrange.Length; i++)
         {
-            if(arrange[i] == 0)
+            if(arrange[i] == emptyIndex)
             {
                 return i;
             }
@@ -203,11 +225,11 @@ public class UserData
     }
 
     //아이템용 아이템 인덱스 찾기
-    public int FindSlotWithId(int Id)
+    public int FindSlotWithId(int[] arrange, int Id)
     {
-        for(int i =0; i< invenNum; i++)
+        for(int i =0; i< arrange.Length; i++)
         {
-            if(inventoryId[i] == Id)
+            if(arrange[i] == Id)
             {
                 return i;
             }
@@ -261,26 +283,55 @@ public class UserData
         buildBuilding = buildingNum;
         buildTime = DateTime.Now;
     }
-    
+
     //유닛생산
     public void UnitCreate(UnitCreate unitCreate)
     {
-        int[] unit = new int[unitNum];
+        int index = FindSlotWithId(GetIdArrange(createUnit), (int)UnitId.None);
 
-        for (int i = 0; i < unitNum; i++)
+        if (index != -1)
         {
-            unit[i] = createUnit[i].num;
+            createUnit[index].num += unitCreate.num;
+        }
+        else
+        {
+            index = FindEmptySlot(GetNumArrange(createUnit), 0);
+            createUnit[index].Id = unitCreate.Id;
+            createUnit[index].num += unitCreate.num;
         }
 
-        int index = FindEmptySlot(unit);
-        createUnit[index].Id = unitCreate.Id;
-        createUnit[index].num = unitCreate.num;
-        unitCreateTime = DateTime.Now + MultiplyTime(UnitDatabase.Instance.unitData[unitCreate.Id].CreateTime, unitCreate.num);
+        if (index == 0)
+        {
+            unitCreateTime = DateTime.Now;
+        }
     }
 
-    public TimeSpan MultiplyTime(TimeSpan time, int num)
+    //유닛 생산 완료
+    public void UnitCreateComplete()
     {
-        return new TimeSpan(time.Hours * num, time.Minutes * num, time.Seconds * num);
+        createUnit[0].num--;
+
+        int index = FindSlotWithId(GetIdArrange(createUnit), createUnit[0].Id);
+
+        if(index != -1)
+        {
+            unit[index].num++;
+        }
+        else
+        {
+            index = FindEmptySlot(GetNumArrange(createUnit), 0);
+            unit[index].Id = createUnit[0].Id;
+            unit[index].num++;
+        }
+
+        if (createUnit[0].num <= 0)
+        {
+            for(int i = 0; i< unitNum - 1; i++)
+            {
+                createUnit[i].Id = createUnit[i + 1].Id;
+                createUnit[i].num = createUnit[i + 1].num;
+            }
+        }
     }
 
     //유닛공격, 복귀

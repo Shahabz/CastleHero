@@ -68,8 +68,8 @@ public class UIManager : MonoBehaviour
     public Text castleState;
     public Text heroState;
     public Text resource;
-    public Text unitCreateName;
-    public Text unitCreateTime;
+    public Text createUnitName;
+    public Text createUnitTime;
     public Text buildName;
     public Text buildTime;
     public Text level;
@@ -179,8 +179,8 @@ public class UIManager : MonoBehaviour
         castleState = GameObject.Find("CastleState").GetComponent<Text>();
         heroState = GameObject.Find("HeroState").GetComponent<Text>();
         resource = GameObject.Find("Resource").GetComponent<Text>();
-        unitCreateName = GameObject.Find("UnitCreateName").GetComponent<Text>();
-        unitCreateTime = GameObject.Find("UnitCreateTime").GetComponent<Text>();
+        createUnitName = GameObject.Find("CreateUnitName").GetComponent<Text>();
+        createUnitTime = GameObject.Find("CreateUnitTime").GetComponent<Text>();
         buildName = GameObject.Find("BuildName").GetComponent<Text>();
         buildTime = GameObject.Find("BuildTime").GetComponent<Text>();
         level = GameObject.Find("Level").GetComponent<Text>();
@@ -230,6 +230,7 @@ public class UIManager : MonoBehaviour
         buildingButton.onClick.AddListener(() => OnClickBuildingButton());
         quitButton.onClick.AddListener(() => OnClickQuitButton());
         buildingUIManager.OnClickAddListener();
+        unitUIManager.OnClickAddListener();
     }
 
     //가입하기버튼
@@ -324,8 +325,12 @@ public class UIManager : MonoBehaviour
     public void OnClickQuitButton()
     {
         currentPanel = null;
+        unitUIManager.CurrentUnit = UnitId.None;
+        buildingUIManager.CurrentBuilding = BuildingId.None;
         statusPanel.SetActive(false);
         itemPanel.SetActive(false);
+        unitPanel.SetActive(false);
+        buildingPanel.SetActive(false);
         informationPanel.SetActive(false);
     }
 
@@ -418,10 +423,13 @@ public class UIManager : MonoBehaviour
 
         for (int i = 0; i < dataManager.Unit.Length; i++)
         {
-            GameObject unit = Instantiate(Resources.Load("/Prefabs/Unit")) as GameObject;
-            unit.transform.SetParent(unitStateScroll.transform);
-            float posY = 100 - (i * 50);
-            unit.GetComponent<RectTransform>().localPosition = new Vector3(0, posY, 0);
+            if(dataManager.Unit[i].Id != (int)UnitId.None)
+            {
+                GameObject unit = Instantiate(Resources.Load("/Prefabs/Unit")) as GameObject;
+                unit.transform.SetParent(unitStateScroll.transform);
+                float posY = 100 - (i * 50);
+                unit.GetComponent<RectTransform>().localPosition = new Vector3(0, posY, 0);
+            }            
         }
     }
 
@@ -477,23 +485,6 @@ public class UIManager : MonoBehaviour
         {
             castleState.text = "공격당함";
         }
-    }
-    
-    //건설 상태 셋팅
-    public void SetBuildState()
-    {
-        Building building = BuildingDatabase.Instance.GetBuildingData(dataManager.BuildBuilding);
-
-        if (building.ID != BuildingId.None)
-        {
-            buildName.text = building.Name;
-            buildTime.text = BuildingDatabase.Instance.buildingData[dataManager.BuildBuilding].BuildingData[dataManager.Building[(int)currentBuilding]].BuildTime.ToString();
-        }
-        else
-        {
-            buildName.text = "None";
-            buildTime.text = "00:00:00";
-        }        
     }
 
     //자원 셋팅
@@ -578,6 +569,7 @@ public class UIManager : MonoBehaviour
         while (dataManager.BuildBuilding != DataManager.buildingNum)
         {
             yield return new WaitForFixedUpdate();
+
             if (dataManager.BuildBuilding != (int)BuildingId.None)
             {
                 buildName.text = BuildingDatabase.Instance.buildingData[dataManager.BuildBuilding].Name;
@@ -587,14 +579,14 @@ public class UIManager : MonoBehaviour
                 buildName.text = "None";
             }
 
-            buildTime.text = (dataManager.BuildTime - DateTime.Now).Hours.ToString("00") + ":" + (dataManager.BuildTime - DateTime.Now).Minutes.ToString("00") + ":" + (dataManager.BuildTime - DateTime.Now).Seconds.ToString("00");
+            buildTime.text = (dataManager.BuildTime - DateTime.Now).Hours.ToString("00") + ":" + (dataManager.BuildTime - DateTime.Now).Minutes.ToString("00")
+                + ":" + (dataManager.BuildTime - DateTime.Now).Seconds.ToString("00");
 
             if (dataManager.BuildTime < DateTime.Now)
             {
                 networkManager.BuildComplete();
-                dataManager.BuildBuilding = 6;
-                dataManager.BuildTime = DateTime.Now;
-                SetBuildState();
+                buildName.text = "None";
+                buildTime.text = "00:00:00";
                 break;
             }
         }
@@ -603,31 +595,29 @@ public class UIManager : MonoBehaviour
     //유닛 생산 시간 체크
     public IEnumerator UnitCreateTimeCheck()
     {
-        
-
         while (dataManager.CreateUnitKind != 0)
         {
             yield return new WaitForFixedUpdate();
 
-            unitCreateName.text = "";
+            createUnitName.text = "";
 
-            for (int i=0; i < dataManager.CreateUnit.Length; i++)
+            for (int i = 0; i < dataManager.CreateUnit.Length; i++)
             {
-                if (dataManager.CreateUnit[i].Id != 0)
+                if (dataManager.CreateUnit[i].Id != (int)UnitId.None)
                 {
-                    unitCreateName.text += UnitDatabase.Instance.unitData[dataManager.CreateUnit[i].Id].Name + " x ";
-                    unitCreateName.text += dataManager.CreateUnit[i].num + ", ";
+                    createUnitName.text += UnitDatabase.Instance.unitData[dataManager.CreateUnit[i].Id].Name + " x ";
+                    createUnitName.text += dataManager.CreateUnit[i].num + ", ";
                 }
             }
 
-            unitCreateTime.text = (dataManager.UnitCreateTime - DateTime.Now).Hours.ToString("00") + ":" + (dataManager.UnitCreateTime - DateTime.Now).Minutes.ToString("00") + ":" + (dataManager.UnitCreateTime - DateTime.Now).Seconds.ToString("00");
+            TimeSpan createTime = dataManager.UnitCreateTime - DateTime.Now + UnitDatabase.Instance.unitData[dataManager.CreateUnit[0].Id].CreateTime;
+            createUnitTime.text = createTime.Hours.ToString("00") + ":" + createTime.Minutes.ToString("00") + ":" + createTime.Seconds.ToString("00");
 
-            if (dataManager.UnitCreateTime < DateTime.Now)
+            if (createTime < new TimeSpan(0))
             {
                 networkManager.UnitCreateComplete();
-                dataManager.BuildBuilding = 6;
-                dataManager.BuildTime = DateTime.Now;
-                SetBuildState();
+                createUnitName.text = "None";
+                createUnitTime.text = "00:00:00";
                 break;
             }
         }

@@ -88,6 +88,7 @@ public class LoadingManager : MonoBehaviour
         StartCoroutine(LoadResourceData());
         StartCoroutine(LoadStateData());
         StartCoroutine(LoadBuildData());
+        StartCoroutine(LoadUnitCreateData());
         StartCoroutine(LoadingEndCheck(GameManager.Scene.Wait));
     }
 
@@ -234,7 +235,7 @@ public class LoadingManager : MonoBehaviour
             uiManager.SetWaitUIObject();
             uiManager.WaitSceneAddListener();
             StartCoroutine(uiManager.BuildTimeCheck());
-            //StartCoroutine(uiManager.());
+            StartCoroutine(uiManager.UnitCreateTimeCheck());
         }
         else if(level == (int)GameManager.Scene.Loading)
         {

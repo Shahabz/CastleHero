@@ -59,12 +59,13 @@ public class UnitCreateDataPacket : IPacket<UnitCreateData>
             element.second = second;
             element.kind = kind;
 
+            element.unit = new Unit[kind];
+
             for (int i = 0; i < kind; i++)
             {
                 ret &= Deserialize(ref unitId);
                 ret &= Deserialize(ref unitNum);
-                element.unit[i].Id = unitId;
-                element.unit[i].num = unitNum;
+                element.unit[i] = new Unit(unitId, unitNum);
             }
 
             return ret;

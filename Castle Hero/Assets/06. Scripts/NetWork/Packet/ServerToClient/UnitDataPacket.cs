@@ -42,10 +42,10 @@
 
                 for (int j = 0; j < element[i].unitKind; j++)
                 {
+
                     ret &= Deserialize(ref Id);
                     ret &= Deserialize(ref num);
-                    element[i].unit[j].Id = Id;
-                    element[i].unit[j].num = num;
+                    element[i].unit[j] = new Unit(Id, num);
                 }
             }
 
@@ -96,6 +96,10 @@ public class UnitData
     {
         unitKind = 0;
         unit = new Unit[unitKind];
+        for (int i = 0; i < unitKind; i++)
+        {
+            unit[i] = new Unit();
+        }
     }
 
     public UnitData(int newUnitKind, Unit[] newUnit)
@@ -105,7 +109,7 @@ public class UnitData
 
         for (int i = 0; i < unitKind; i++)
         {
-            unit[i] = new Unit(newUnit[i]);
+            unit[i] = new Unit(newUnit[i].Id, newUnit[i].num);
         }
     }
 }
@@ -117,13 +121,13 @@ public class Unit
 
     public Unit()
     {
-        Id = 0;
+        Id = (byte)UnitId.None;
         num = 0;
     }
 
-    public Unit(Unit unit)
+    public Unit(int newId, int newNum)
     {
-        Id = unit.Id;
-        num = unit.num;
+        Id = (byte)newId;
+        num = (byte)newNum;
     }
 }

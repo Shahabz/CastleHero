@@ -39,7 +39,7 @@ public class BuildingUIManager
     public Text nextBuildingExplanation;
 
     BuildingId currentBuilding;
-    public BuildingId CurrentBuilding { get { return currentBuilding; } }
+    public BuildingId CurrentBuilding { get { return currentBuilding; } set { currentBuilding = value; } }
     
     public void ManagerInitialize()
     {

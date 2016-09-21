@@ -199,17 +199,17 @@ class DataManager : MonoBehaviour
 
         for (int i = 0; i < unitData[0].unitKind; i++)
         {
-            unit[i] = new Unit(unitData[0].unit[i]);
+            unit[i] = new Unit(unitData[0].unit[i].Id, unitData[0].unit[i].num);
         }        
 
         for (int i = 0; i < unitData[1].unitKind; i++)
         {
-            createUnit[i] = new Unit(unitData[1].unit[i]);
+            createUnit[i] = new Unit(unitData[1].unit[i].Id, unitData[1].unit[i].num);
         }        
 
         for (int i = 0; i < unitData[2].unitKind; i++)
         {
-            attackUnit[i] = new Unit(unitData[2].unit[i]);
+            attackUnit[i] = new Unit(unitData[2].unit[i].Id, unitData[2].unit[i].num);
         }
     }
 
@@ -256,9 +256,9 @@ class DataManager : MonoBehaviour
 
     public void SetUnitCreateData(UnitCreateData unitCreateData)
     {
-        createUnit = unitCreateData.unit;
+        createUnit = unitCreateData.unit; 
         
-        if(createUnitKind != 0)
+        if(CreateUnitKind != 0)
         {
             unitCreateTime = new DateTime(unitCreateData.year, unitCreateData.month, unitCreateData.day, unitCreateData.hour, unitCreateData.minute, unitCreateData.second);
         }
@@ -266,5 +266,10 @@ class DataManager : MonoBehaviour
         {
             buildTime = DateTime.Now;
         }
+
+        Debug.Log(createUnit[0].Id + unitCreateData.unit[0].Id);
+        Debug.Log(createUnit[0].num + unitCreateData.unit[0].num);
+        Debug.Log(CreateUnitKind);
+        Debug.Log(unitCreateTime.ToString());
     }
 }

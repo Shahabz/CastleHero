@@ -133,6 +133,8 @@ class UnitDatabase
         unitData[(int)UnitId.Knight].AddLevelData(16, 38, 10, 2, 141, 0, 6, 1f, 1, 0);
         unitData[(int)UnitId.Knight].AddLevelData(17, 40, 12, 2, 150, 0, 6, 1.2f, 1, 0);
         unitData[(int)UnitId.Knight].AddLevelData(18, 42, 12, 3, 159, 0, 6, 1.2f, 1, 0);
+
+        unitData.Add(new UnitBaseData(UnitId.None, "None", "", new TimeSpan(0, 0, 0), 0, 0));
     }
 
     public UnitBaseData GetUnitData(int Id)

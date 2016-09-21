@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class UnitUIManager
@@ -27,7 +26,7 @@ public class UnitUIManager
     public Text unitCreateNum;
 
     UnitId currentUnit;
-    public UnitId CurrentUnit { get { return currentUnit; } }
+    public UnitId CurrentUnit { get { return currentUnit; } set { currentUnit = value; } }
 
     public void ManagerInitialize()
     {
@@ -44,6 +43,8 @@ public class UnitUIManager
     {
         unitImage = GameObject.Find("UnitImage");
         unitState = GameObject.Find("UnitState");
+
+        unitCreateButton = GameObject.Find("UnitCreateButton").GetComponent<Button>();
 
         gladiatorLevel = GameObject.Find("GladiatorLevel").GetComponent<Text>();
         archerLevel = GameObject.Find("ArcherLevel").GetComponent<Text>();
@@ -94,6 +95,10 @@ public class UnitUIManager
         if (unitNum <= 0)
         {
             Debug.Log("1이상의 숫자를 입력하세요");
+        }
+        else if(unitNum > 99)
+        {
+            Debug.Log("99이하의 숫자를 입력하세요");
         }
         else
         {

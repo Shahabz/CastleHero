@@ -97,6 +97,7 @@ public class NetworkManager : MonoBehaviour
         m_notifier.Add((int)ServerPacketId.ResourceData, OnReceivedResourceData);
         m_notifier.Add((int)ServerPacketId.StateData, OnReceivedStateData);
         m_notifier.Add((int)ServerPacketId.BuildData, OnReceivedBuildData);
+        m_notifier.Add((int)ServerPacketId.UnitCreateData, OnReceivedUnitCreateData);
     }
 
     public void GameExit()
@@ -298,16 +299,22 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-    void OnReceivedUnitCreate(byte[] msg)
+    void OnReceivedUnitCreateData(byte[] msg)
     {
         UnitCreateDataPacket unitCreateDataPacket = new UnitCreateDataPacket(msg);
         UnitCreateData unitCreateData = unitCreateDataPacket.GetData();
+
+        Debug.Log(unitCreateData.unit.Length);
 
         dataManager.SetUnitCreateData(unitCreateData);
 
         if(loadingManager.CurrentScene == GameManager.Scene.Loading)
         {
-
+            loadingManager.dataCheck[(int)ServerPacketId.UnitCreateData - 4] = true;
+        }
+        else if (loadingManager.CurrentScene == GameManager.Scene.Wait)
+        {
+            StartCoroutine(uiManager.UnitCreateTimeCheck());
         }
     }
 

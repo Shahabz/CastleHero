@@ -100,7 +100,7 @@ public class UnitData
 
         for (int i = 0; i < unitKind; i++)
         {
-            unit[i].Id = 0; unit[i].num = 0;
+            unit[i].Id = (int)UnitId.None; unit[i].num = 0;
         }
     }
 
@@ -124,7 +124,7 @@ public class Unit
 
     public Unit()
     {
-        Id = 0;
+        Id = (int)UnitId.None;
         num = 0;
     }
 

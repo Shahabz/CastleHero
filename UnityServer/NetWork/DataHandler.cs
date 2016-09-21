@@ -48,6 +48,9 @@ public class DataHandler
         m_notifier.Add((int)ClientPacketId.BuildCancel, BuildCancel);
         m_notifier.Add((int)ClientPacketId.BuildDataRequest, BuildDataRequest);
         m_notifier.Add((int)ClientPacketId.BuildComplete, BuildComplete);
+        m_notifier.Add((int)ClientPacketId.UnitCreate, UnitCreate);
+        m_notifier.Add((int)ClientPacketId.UnitCreateDataRequest, UnitCreateDataRequest);
+        m_notifier.Add((int)ClientPacketId.UnitCreateComplete, UnitCreateComplete);
 
         Thread handleThread = new Thread(new ThreadStart(DataHandle));
         handleThread.Start();
@@ -501,6 +504,7 @@ public class DataHandler
         UserData newUserData = database.GetAccountData(Id);
         DateTime time;
 
+        Console.WriteLine("생산 개수"+newUserData.CreateUnitKind);
         if (newUserData.CreateUnitKind != 0)
         {
             time = newUserData.UnitCreateTime;
@@ -524,6 +528,16 @@ public class DataHandler
         return ServerPacketId.UnitCreateData;
     }
 
+    public ServerPacketId UnitCreateComplete(byte[] data)
+    {
+        string Id = LoginUser[tcpPacket.client];
+        Console.WriteLine("아이디 : " + Id);
+        Console.WriteLine("완료 유닛 : " + database.GetAccountData(Id).CreateUnit[0].Id);
+        database.GetAccountData(Id).UnitCreateComplete();
+        database.FileSave(Id + ".data", database.GetAccountData(Id));
+
+        return ServerPacketId.None;
+    }
 
     public void BuildChecker()
     {
@@ -545,7 +559,7 @@ public class DataHandler
                     }
                 }
             }
-        }        
+        }
     }
 
     byte[] CreateHeader<T>(IPacket<T> data, ServerPacketId Id)
