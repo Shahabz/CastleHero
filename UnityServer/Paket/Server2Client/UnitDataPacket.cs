@@ -128,6 +128,12 @@ public class Unit
         num = 0;
     }
 
+    public Unit(int newId, int newNum)
+    {
+        Id = (byte)newId;
+        num = (byte)newNum;
+    }
+
     public Unit(Unit unit)
     {
         Id = unit.Id;

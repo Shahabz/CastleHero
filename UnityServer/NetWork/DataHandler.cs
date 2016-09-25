@@ -488,6 +488,7 @@ public class DataHandler
 
         UnitCreatePacket unitCreatePacket = new UnitCreatePacket(data);
         UnitCreate unitCreate = unitCreatePacket.GetData();
+
         database.GetAccountData(Id).UnitCreate(unitCreate);
         database.FileSave(Id + ".data", database.GetAccountData(Id));
 
@@ -521,7 +522,9 @@ public class DataHandler
 
         Console.WriteLine("요청아이디 : " + Id);
         Console.WriteLine("생산유닛 : " + newUserData.CreateUnitKind);
-        Console.WriteLine("시간 : " + time.ToString());
+        Console.WriteLine("시간 : " + unitCreateData.hour.ToString() + ":" + unitCreateData.minute.ToString() + ":" + unitCreateData.second.ToString());
+        Console.WriteLine(unitCreateData.unit[0].Id);
+        Console.WriteLine(unitCreateData.unit[0].num);
 
         msg = CreatePacket(unitCreateDataPacket, ServerPacketId.UnitCreateData);
 

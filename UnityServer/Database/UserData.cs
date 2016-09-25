@@ -30,7 +30,7 @@ public class UserData
     int createUnitKind;
     int attackUnitKind;
     Unit[] unit;
-    Unit[] createUnit;
+    Unit createUnit;
     Unit[] attackUnit;
     DateTime unitCreateTime;
     int[] building;
@@ -48,7 +48,7 @@ public class UserData
     public int[] InventoryId { get { return inventoryId; } }
     public int[] InventoryNum { get { return inventoryNum; } }
     public Unit[] Unit { get { return unit; } }
-    public Unit[] CreateUnit { get { return createUnit; } }
+    public Unit CreateUnit { get { return createUnit; } }
     public Unit[] AttackUnit { get { return attackUnit; } }
     
     public int UnitKind
@@ -63,20 +63,6 @@ public class UserData
                     unitKind++;
             }
             return unitKind;
-        }
-    }
-    public int CreateUnitKind
-    {
-        get
-        {
-            createUnitKind = 0;
-
-            for (int i = 0; i < unitNum; i++)
-            {
-                if (createUnit[i].num != 0)
-                    createUnitKind++;
-            }
-            return createUnitKind;
         }
     }
     public int AttackUnitKind
@@ -119,7 +105,7 @@ public class UserData
         inventoryNum = new int[invenNum];
         skill = new int[skillNum];
         unit = new Unit[unitNum];
-        createUnit = new Unit[unitNum];
+        createUnit = new Unit();
         attackUnit = new Unit[unitNum];
         building = new int[buildingNum];
         buildTime = new DateTime();
@@ -132,7 +118,6 @@ public class UserData
         for (int i = 0; i < unitNum; i++)
         {
             unit[i] = new Unit();
-            createUnit[i] = new Unit();
             attackUnit[i] = new Unit();
             upgrade[i] = 1;
         }
@@ -287,51 +272,13 @@ public class UserData
     //유닛생산
     public void UnitCreate(UnitCreate unitCreate)
     {
-        int index = FindSlotWithId(GetIdArrange(createUnit), (int)UnitId.None);
-
-        if (index != -1)
-        {
-            createUnit[index].num += unitCreate.num;
-        }
-        else
-        {
-            index = FindEmptySlot(GetNumArrange(createUnit), 0);
-            createUnit[index].Id = unitCreate.Id;
-            createUnit[index].num += unitCreate.num;
-        }
-
-        if (index == 0)
-        {
-            unitCreateTime = DateTime.Now;
-        }
+        createUnit = new Unit(unitCreate.Id, unitCreate.num);
     }
 
     //유닛 생산 완료
     public void UnitCreateComplete()
     {
-        createUnit[0].num--;
-
-        int index = FindSlotWithId(GetIdArrange(createUnit), createUnit[0].Id);
-
-        if(index != -1)
-        {
-            unit[index].num++;
-        }
-        else
-        {
-            index = FindEmptySlot(GetNumArrange(createUnit), 0);
-            unit[index].Id = createUnit[0].Id;
-            unit[index].num++;
-        }
-
-        if (createUnit[0].num <= 0)
-        {
-            for(int i = 0; i< unitNum - 1; i++)
-            {
-                createUnit[i].Id = createUnit[i + 1].Id;
-                createUnit[i].num = createUnit[i + 1].num;
-            }
-        }
+        createUnit.num--;
     }
 
     //유닛공격, 복귀

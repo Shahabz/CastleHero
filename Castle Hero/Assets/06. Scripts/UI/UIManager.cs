@@ -5,8 +5,10 @@ using System.Collections;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] NetworkManager networkManager;
-    [SerializeField] DataManager dataManager;
+    [SerializeField]
+    NetworkManager networkManager;
+    [SerializeField]
+    DataManager dataManager;
 
     UnitUIManager unitUIManager;
     public UnitUIManager UnitUIManager { get { return unitUIManager; } }
@@ -14,77 +16,77 @@ public class UIManager : MonoBehaviour
     public BuildingUIManager BuildingUIManager { get { return buildingUIManager; } }
 
     //로그인씬 패널
-    public GameObject loginPanel;
+    GameObject loginPanel;
     public GameObject createAccountPanel;
     public GameObject deleteAccountPanel;
-    public GameObject lastChoicePanel;
+    GameObject lastChoicePanel;
     public static GameObject dialog;
 
     //대기씬 패널
-    public GameObject unitStateScroll;
-    public GameObject informationPanel;
-    public GameObject currentPanel;
-    public GameObject statusPanel;
-    public GameObject itemPanel;
-    public GameObject equipmentPanel;
-    public GameObject inventoryPanel;
-    public GameObject unitPanel;
-    public GameObject buildingPanel;
+    GameObject unitStateScroll;
+    GameObject informationPanel;
+    GameObject currentPanel;
+    GameObject statusPanel;
+    GameObject itemPanel;
+    GameObject equipmentPanel;
+    GameObject inventoryPanel;
+    GameObject unitPanel;
+    GameObject buildingPanel;
 
     //로그인씬 버튼
-    public Button loginButton;
-    public Button createButton;
-    public Button deleteButton;
-    public Button exitButton;
-    public Button loginAccountButton;
-    public Button loginCancelButton;
-    public Button createAccountButton;
-    public Button createCancelButton;
-    public Button deleteAccountButton;
-    public Button deleteCancelButton;
-    public Button deleteYesButton;
-    public Button deleteNoButton;
+    Button loginButton;
+    Button createButton;
+    Button deleteButton;
+    Button exitButton;
+    Button loginAccountButton;
+    Button loginCancelButton;
+    Button createAccountButton;
+    Button createCancelButton;
+    Button deleteAccountButton;
+    Button deleteCancelButton;
+    Button deleteYesButton;
+    Button deleteNoButton;
 
     //대기씬 버튼
-    public Button logoutButton;
-    public Button statusButton;
-    public Button equipmentButton;
-    public Button skillButton;
-    public Button unitButton;
-    public Button createUnitButton;
-    public Button buildingButton;
-    public Button upgradeButton;
-    public Button quitButton;
+    Button logoutButton;
+    Button statusButton;
+    Button equipmentButton;
+    Button skillButton;
+    Button unitButton;
+    Button createUnitButton;
+    Button buildingButton;
+    Button upgradeButton;
+    Button quitButton;
 
     //로그인씬 텍스트
     public Text loginId;
-    public Text loginPw;
-    public Text createId;
-    public Text createPw;
-    public Text deleteId;
-    public Text deletePw;
+    Text loginPw;
+    Text createId;
+    Text createPw;
+    Text deleteId;
+    Text deletePw;
 
     //대기씬 텍스트
-    public Text castleState;
-    public Text heroState;
-    public Text resource;
-    public Text createUnitName;
-    public Text createUnitTime;
-    public Text buildName;
-    public Text buildTime;
-    public Text level;
-    public Text experience;
-    public Text health;
-    public Text mana;
-    public Text attack;
-    public Text defense;
-    public Text magicDefense;
-    public Text moveSpeed;
-    public Text attackSpeed;
+    Text castleState;
+    Text heroState;
+    Text resource;
+    Text createUnitName;
+    Text createUnitTime;
+    Text buildName;
+    Text buildTime;
+    Text level;
+    Text experience;
+    Text health;
+    Text mana;
+    Text attack;
+    Text defense;
+    Text magicDefense;
+    Text moveSpeed;
+    Text attackSpeed;
 
     //대기씬 이미지
-    public GameObject[] equipment;
-    public GameObject[] inventory;
+    GameObject[] equipment;
+    GameObject[] inventory;
 
     public BuildingId currentBuilding;
 
@@ -116,7 +118,7 @@ public class UIManager : MonoBehaviour
     //UI매니저 초기화
     public void SetUIManager()
     {
-        unitUIManager.SetUIObject();        
+        unitUIManager.SetUIObject();
         buildingUIManager.SetUIObject();
     }
 
@@ -195,7 +197,7 @@ public class UIManager : MonoBehaviour
 
         CreateEquipmentSlot();
         CreateInventorySlot();
-        
+
         statusPanel.SetActive(false);
         itemPanel.SetActive(false);
         unitPanel.SetActive(false);
@@ -224,7 +226,7 @@ public class UIManager : MonoBehaviour
     public void WaitSceneAddListener()
     {
         logoutButton.onClick.AddListener(() => OnClickLogoutButton());
-        statusButton.onClick.AddListener(() => OnCLickStatusButton());        
+        statusButton.onClick.AddListener(() => OnCLickStatusButton());
         equipmentButton.onClick.AddListener(() => OnClickItemButton());
         unitButton.onClick.AddListener(() => OnClickUnitButton());
         buildingButton.onClick.AddListener(() => OnClickBuildingButton());
@@ -312,7 +314,7 @@ public class UIManager : MonoBehaviour
         {
             Debug.Log("아이디 4글자 이상. 비밀번호 6글자 이상");
         }
-    }    
+    }
 
     //로그아웃
     public void OnClickLogoutButton()
@@ -337,7 +339,7 @@ public class UIManager : MonoBehaviour
     //스텟 버튼
     public void OnCLickStatusButton()
     {
-        if(currentPanel != statusPanel)
+        if (currentPanel != statusPanel)
         {
             SetPanel();
             informationPanel.SetActive(true);
@@ -350,7 +352,7 @@ public class UIManager : MonoBehaviour
     //장비 버튼
     public void OnClickItemButton()
     {
-        if(currentPanel != itemPanel)
+        if (currentPanel != itemPanel)
         {
             SetPanel();
             informationPanel.SetActive(true);
@@ -376,7 +378,7 @@ public class UIManager : MonoBehaviour
     //건물 버튼
     public void OnClickBuildingButton()
     {
-        if(currentPanel != buildingPanel)
+        if (currentPanel != buildingPanel)
         {
             SetPanel();
             informationPanel.SetActive(true);
@@ -423,13 +425,13 @@ public class UIManager : MonoBehaviour
 
         for (int i = 0; i < dataManager.Unit.Length; i++)
         {
-            if(dataManager.Unit[i].Id != (int)UnitId.None)
+            if (dataManager.Unit[i].Id != (int)UnitId.None)
             {
                 GameObject unit = Instantiate(Resources.Load("/Prefabs/Unit")) as GameObject;
                 unit.transform.SetParent(unitStateScroll.transform);
                 float posY = 100 - (i * 50);
                 unit.GetComponent<RectTransform>().localPosition = new Vector3(0, posY, 0);
-            }            
+            }
         }
     }
 

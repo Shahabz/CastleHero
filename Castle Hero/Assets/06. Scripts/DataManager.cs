@@ -80,10 +80,7 @@ class DataManager : MonoBehaviour
         {
             createUnitKind = 0;
 
-            createUnit = new Unit[unitNum];
-            for (int i = 0; i < unitNum; i++) { createUnit[i] = new Unit(); }
-
-            for (int i = 0; i < unitNum; i++)
+            for (int i = 0; i < createUnit.Length; i++)
             {
                 if (createUnit[i].num != 0)
                     createUnitKind++;
@@ -97,7 +94,7 @@ class DataManager : MonoBehaviour
         {
             attackUnitKind = 0;
 
-            for (int i = 0; i < unitNum; i++)
+            for (int i = 0; i < attackUnit.Length; i++)
             {
                 if (attackUnit[i].num != 0)
                     attackUnitKind++;
@@ -256,8 +253,8 @@ class DataManager : MonoBehaviour
 
     public void SetUnitCreateData(UnitCreateData unitCreateData)
     {
-        createUnit = unitCreateData.unit; 
-        
+        createUnit = unitCreateData.unit;
+
         if(CreateUnitKind != 0)
         {
             unitCreateTime = new DateTime(unitCreateData.year, unitCreateData.month, unitCreateData.day, unitCreateData.hour, unitCreateData.minute, unitCreateData.second);
@@ -265,11 +262,6 @@ class DataManager : MonoBehaviour
         else
         {
             buildTime = DateTime.Now;
-        }
-
-        Debug.Log(createUnit[0].Id + unitCreateData.unit[0].Id);
-        Debug.Log(createUnit[0].num + unitCreateData.unit[0].num);
-        Debug.Log(CreateUnitKind);
-        Debug.Log(unitCreateTime.ToString());
+        }    
     }
 }

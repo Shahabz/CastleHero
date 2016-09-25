@@ -236,7 +236,15 @@ public class NetworkManager : MonoBehaviour
         UnitData[] unitData = unitDataPacket.GetData();
 
         dataManager.SetUnitData(unitData);
-        loadingManager.dataCheck[(int)ServerPacketId.UnitData - 4] = true;
+
+        if (loadingManager.CurrentScene == GameManager.Scene.Loading)
+        {
+            loadingManager.dataCheck[(int)ServerPacketId.UnitData - 4] = true;
+        }
+        else if (loadingManager.CurrentScene == GameManager.Scene.Wait)
+        {
+            uiManager.SetUnitScrollView();
+        }        
     }
 
     void OnReceivedBuildingData(byte[] msg)
@@ -303,8 +311,7 @@ public class NetworkManager : MonoBehaviour
     {
         UnitCreateDataPacket unitCreateDataPacket = new UnitCreateDataPacket(msg);
         UnitCreateData unitCreateData = unitCreateDataPacket.GetData();
-
-        Debug.Log(unitCreateData.unit.Length);
+        Debug.Log("시간 : " + unitCreateData.hour.ToString() + ":" + unitCreateData.minute.ToString() + ":" + unitCreateData.second.ToString());
 
         dataManager.SetUnitCreateData(unitCreateData);
 
