@@ -92,6 +92,7 @@ public class UnitUIManager
     public void OnClickUnitCreateButton()
     {
         int unitNum = int.Parse(unitCreateNum.text);
+
         if (unitNum <= 0)
         {
             Debug.Log("1이상의 숫자를 입력하세요");
@@ -102,6 +103,7 @@ public class UnitUIManager
         }
         else
         {
+            Debug.Log("생성 유닛 : " + currentUnit + "생성숫자 : "  + unitNum);
             networkManager.UnitCreate((int)currentUnit, unitNum);
             networkManager.DataRequest(ClientPacketId.UnitCreateDataRequest);
 

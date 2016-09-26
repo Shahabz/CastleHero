@@ -14,13 +14,8 @@ public class UnitCreateDataPacket : IPacket<UnitCreateData>
             ret &= Serialize(data.hour);
             ret &= Serialize(data.minute);
             ret &= Serialize(data.second);
-            ret &= Serialize(data.kind);
-
-            for(int i =0; i< data.kind; i++)
-            {
-                ret &= Serialize(data.unit[i].Id);
-                ret &= Serialize(data.unit[i].num);
-            }
+            ret &= Serialize(data.unit.Id);
+            ret &= Serialize(data.unit.num);
 
             return ret;
         }
@@ -43,7 +38,7 @@ public class UnitCreateDataPacket : IPacket<UnitCreateData>
             byte kind = 0;
             byte unitId = 0;
             byte unitNum = 0;
-            
+
             ret &= Deserialize(ref year);
             ret &= Deserialize(ref month);
             ret &= Deserialize(ref day);
@@ -51,21 +46,16 @@ public class UnitCreateDataPacket : IPacket<UnitCreateData>
             ret &= Deserialize(ref minute);
             ret &= Deserialize(ref second);
             ret &= Deserialize(ref kind);
+            ret &= Deserialize(ref unitId);
+            ret &= Deserialize(ref unitNum);
             element.year = year;
             element.month = month;
             element.day = day;
             element.hour = hour;
             element.minute = minute;
             element.second = second;
-            element.kind = kind;
-
-            for (int i = 0; i < kind; i++)
-            {
-                ret &= Deserialize(ref unitId);
-                ret &= Deserialize(ref unitNum);
-                element.unit[i].Id = unitId;
-                element.unit[i].num = unitNum;
-            }
+            element.unit.Id = unitId;
+            element.unit.num = unitNum;
 
             return ret;
         }
@@ -112,8 +102,7 @@ public class UnitCreateData
     public byte hour;
     public byte minute;
     public byte second;
-    public byte kind;
-    public Unit[] unit;
+    public Unit unit;
 
     public UnitCreateData()
     {
@@ -123,11 +112,10 @@ public class UnitCreateData
         hour = 0;
         minute = 0;
         second = 0;
-        kind = 0;
-        unit = new Unit[kind];
+        unit = new Unit();
     }
 
-    public UnitCreateData(DateTime time, int newKind, Unit[] newUnit)
+    public UnitCreateData(DateTime time, Unit newUnit)
     {
         year = (short)time.Year;
         month = (byte)time.Month;
@@ -135,7 +123,6 @@ public class UnitCreateData
         hour = (byte)time.Hour;
         minute = (byte)time.Minute;
         second = (byte)time.Second;
-        kind = (byte)newKind;
-        unit = newUnit;
+        unit = new Unit(newUnit.Id, newUnit.num);
     }
 }

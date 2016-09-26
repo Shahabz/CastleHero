@@ -46,7 +46,7 @@ public class NetworkManager : MonoBehaviour
     IEnumerator ServerConect()
     {
         int count = 0;
-        while (count < 3)
+        while (count < 100)
         {   
             try
             {
@@ -98,6 +98,7 @@ public class NetworkManager : MonoBehaviour
         m_notifier.Add((int)ServerPacketId.StateData, OnReceivedStateData);
         m_notifier.Add((int)ServerPacketId.BuildData, OnReceivedBuildData);
         m_notifier.Add((int)ServerPacketId.UnitCreateData, OnReceivedUnitCreateData);
+        m_notifier.Add((int)ServerPacketId.PositionData, OnReceivedPositionData);
     }
 
     public void GameExit()
@@ -158,7 +159,14 @@ public class NetworkManager : MonoBehaviour
             lock (sendLock)
             {
                 byte[] msg = sendMsg.Dequeue();
-                clientSock.Send(msg);
+                try
+                {
+                    clientSock.Send(msg);
+                }
+                catch
+                {
+                    Debug.Log("서버의 응답이 없습니다.");
+                }                
             }
         }
     }
@@ -233,7 +241,7 @@ public class NetworkManager : MonoBehaviour
     void OnReceivedUnitData(byte[] msg)
     {
         UnitDataPacket unitDataPacket = new UnitDataPacket(msg);
-        UnitData[] unitData = unitDataPacket.GetData();
+        UnitData unitData = unitDataPacket.GetData();
 
         dataManager.SetUnitData(unitData);
 
@@ -311,6 +319,7 @@ public class NetworkManager : MonoBehaviour
     {
         UnitCreateDataPacket unitCreateDataPacket = new UnitCreateDataPacket(msg);
         UnitCreateData unitCreateData = unitCreateDataPacket.GetData();
+        Debug.Log(" 생산유닛 : " + unitCreateData.unit.Id + " 생산개수 : " + unitCreateData.unit.num);
         Debug.Log("시간 : " + unitCreateData.hour.ToString() + ":" + unitCreateData.minute.ToString() + ":" + unitCreateData.second.ToString());
 
         dataManager.SetUnitCreateData(unitCreateData);
@@ -323,6 +332,16 @@ public class NetworkManager : MonoBehaviour
         {
             StartCoroutine(uiManager.UnitCreateTimeCheck());
         }
+    }
+
+    void OnReceivedPositionData(byte[] msg)
+    {
+        PositionDataPacket positionDataPacket = new PositionDataPacket(msg);
+        PositionData positionData = positionDataPacket.GetData();
+
+        dataManager.SetPositionData(positionData);
+
+        loadingManager.dataCheck[(int)ServerPacketId.PositionData - 4] = true;
     }
 
     public void CreateAccount(string Id, string Pw)
@@ -397,6 +416,7 @@ public class NetworkManager : MonoBehaviour
     {
         DataRequest(ClientPacketId.UnitCreateComplete);
         DataRequest(ClientPacketId.UnitDataRequest);
+        DataRequest(ClientPacketId.UnitCreateDataRequest);
     }
 
     byte[] CreateHeader<T>(IPacket<T> data, ClientPacketId Id)

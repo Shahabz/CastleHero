@@ -31,16 +31,17 @@ class DataManager : MonoBehaviour
     public const int buildingNum = 6;
 
     [SerializeField] string Id;
+    [SerializeField] int xPos;
+    [SerializeField] int yPos;
     [SerializeField] HeroBaseData heroData;
     [SerializeField] int[] equipment;
     [SerializeField] int[] inventoryId;
     [SerializeField] int[] inventoryNum;
     [SerializeField] int[] skill;
     [SerializeField] Unit[] unit;
-    [SerializeField] Unit[] createUnit;
+    [SerializeField] Unit createUnit;
     [SerializeField] Unit[] attackUnit;
     [SerializeField] int unitKind;
-    [SerializeField] int createUnitKind;
     [SerializeField] int attackUnitKind;
     [SerializeField] DateTime unitCreateTime;
     [SerializeField] int[] building;
@@ -52,13 +53,15 @@ class DataManager : MonoBehaviour
     [SerializeField] CastleState castleState;
 
     public string ID { get { return Id; } }
+    public int XPos { get { return xPos; } }
+    public int YPos { get { return yPos; } }
     public HeroBaseData HeroData { get { return heroData; } }
     public int[] Equipment { get { return equipment; } }
     public int[] InventoryId { get { return inventoryId; } }
     public int[] InventoryNum { get { return inventoryNum; } }
     public int[] Skill { get { return skill; } }
     public Unit[] Unit { get { return unit; } }
-    public Unit[] CreateUnit { get { return createUnit; } }
+    public Unit CreateUnit { get { return createUnit; } }
     public Unit[] AttackUnit { get { return attackUnit; } }
     public int UnitKind
     {
@@ -72,20 +75,6 @@ class DataManager : MonoBehaviour
                     unitKind++;
             }
             return unitKind;
-        }
-    }
-    public int CreateUnitKind
-    {
-        get
-        {
-            createUnitKind = 0;
-
-            for (int i = 0; i < createUnit.Length; i++)
-            {
-                if (createUnit[i].num != 0)
-                    createUnitKind++;
-            }
-            return createUnitKind;
         }
     }
     public int AttackUnitKind
@@ -144,7 +133,7 @@ class DataManager : MonoBehaviour
         inventoryNum = new int[invenNum];
         skill = new int[skillNum];
         unit = new Unit[unitNum];
-        createUnit = new Unit[unitNum];
+        createUnit = new Unit();
         attackUnit = new Unit[unitNum];
         building = new int[buildingNum];
         upgrade = new int[unitNum];
@@ -188,26 +177,14 @@ class DataManager : MonoBehaviour
         }
     }
 
-    public void SetUnitData(UnitData[] unitData)
+    public void SetUnitData(UnitData unitData)
     {
-        unit = new Unit[unitData[0].unitKind];
-        createUnit = new Unit[unitData[1].unitKind];
-        attackUnit = new Unit[unitData[2].unitKind];
+        unit = new Unit[unitData.unitKind];
 
-        for (int i = 0; i < unitData[0].unitKind; i++)
+        for (int i = 0; i < unitData.unitKind; i++)
         {
-            unit[i] = new Unit(unitData[0].unit[i].Id, unitData[0].unit[i].num);
+            unit[i] = new Unit(unitData.unit[i].Id, unitData.unit[i].num);
         }        
-
-        for (int i = 0; i < unitData[1].unitKind; i++)
-        {
-            createUnit[i] = new Unit(unitData[1].unit[i].Id, unitData[1].unit[i].num);
-        }        
-
-        for (int i = 0; i < unitData[2].unitKind; i++)
-        {
-            attackUnit[i] = new Unit(unitData[2].unit[i].Id, unitData[2].unit[i].num);
-        }
     }
 
     public void SetBuildingData(BuildingData buildingData)
@@ -255,13 +232,19 @@ class DataManager : MonoBehaviour
     {
         createUnit = unitCreateData.unit;
 
-        if(CreateUnitKind != 0)
+        if(createUnit.num != 0)
         {
             unitCreateTime = new DateTime(unitCreateData.year, unitCreateData.month, unitCreateData.day, unitCreateData.hour, unitCreateData.minute, unitCreateData.second);
         }
         else
         {
             buildTime = DateTime.Now;
-        }    
+        }
+    }
+
+    public void SetPositionData(PositionData positionData)
+    {
+        xPos = positionData.xPos;
+        yPos = positionData.yPos;
     }
 }

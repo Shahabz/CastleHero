@@ -5,15 +5,15 @@ using System.Collections;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField]
-    NetworkManager networkManager;
-    [SerializeField]
-    DataManager dataManager;
+    [SerializeField] NetworkManager networkManager;
+    [SerializeField] DataManager dataManager;
 
     UnitUIManager unitUIManager;
-    public UnitUIManager UnitUIManager { get { return unitUIManager; } }
     BuildingUIManager buildingUIManager;
+    WorldMapUIManager worldMapUIManager;
     public BuildingUIManager BuildingUIManager { get { return buildingUIManager; } }
+    public UnitUIManager UnitUIManager { get { return unitUIManager; } }
+    public WorldMapUIManager WorldMapUIManager { get { return worldMapUIManager; } }
 
     //로그인씬 패널
     GameObject loginPanel;
@@ -32,6 +32,7 @@ public class UIManager : MonoBehaviour
     GameObject inventoryPanel;
     GameObject unitPanel;
     GameObject buildingPanel;
+    GameObject worldMapPanel;
 
     //로그인씬 버튼
     Button loginButton;
@@ -53,10 +54,10 @@ public class UIManager : MonoBehaviour
     Button equipmentButton;
     Button skillButton;
     Button unitButton;
-    Button createUnitButton;
     Button buildingButton;
     Button upgradeButton;
-    Button quitButton;
+    Button informationQuitButton;
+    Button worldMapButton;
 
     //로그인씬 텍스트
     public Text loginId;
@@ -113,6 +114,8 @@ public class UIManager : MonoBehaviour
         unitUIManager.ManagerInitialize();
         buildingUIManager = new BuildingUIManager();
         buildingUIManager.ManagerInitialize();
+        worldMapUIManager = new WorldMapUIManager();
+        worldMapUIManager.ManagerInitialize();
     }
 
     //UI매니저 초기화
@@ -120,6 +123,7 @@ public class UIManager : MonoBehaviour
     {
         unitUIManager.SetUIObject();
         buildingUIManager.SetUIObject();
+        worldMapUIManager.SetUIObject();
     }
 
     //로그인씬 패널, 버튼, 텍스트 설정
@@ -168,6 +172,7 @@ public class UIManager : MonoBehaviour
         inventoryPanel = GameObject.Find("InventoryPanel");
         unitPanel = GameObject.Find("UnitPanel");
         buildingPanel = GameObject.Find("BuildingPanel");
+        worldMapPanel = GameObject.Find("WorldMapPanel");
 
         logoutButton = GameObject.Find("LogoutButton").GetComponent<Button>();
         statusButton = GameObject.Find("StatusButton").GetComponent<Button>();
@@ -176,7 +181,8 @@ public class UIManager : MonoBehaviour
         unitButton = GameObject.Find("UnitButton").GetComponent<Button>();
         buildingButton = GameObject.Find("BuildingButton").GetComponent<Button>();
         upgradeButton = GameObject.Find("UpgradeButton").GetComponent<Button>();
-        quitButton = GameObject.Find("QuitButton").GetComponent<Button>();
+        informationQuitButton = GameObject.Find("InformationQuitButton").GetComponent<Button>();
+        worldMapButton = GameObject.Find("WorldMapButton").GetComponent<Button>();
 
         castleState = GameObject.Find("CastleState").GetComponent<Text>();
         heroState = GameObject.Find("HeroState").GetComponent<Text>();
@@ -203,6 +209,7 @@ public class UIManager : MonoBehaviour
         unitPanel.SetActive(false);
         buildingPanel.SetActive(false);
         informationPanel.SetActive(false);
+        worldMapPanel.SetActive(false);
     }
 
     //로그인씬 버튼 이벤트 설정
@@ -230,9 +237,11 @@ public class UIManager : MonoBehaviour
         equipmentButton.onClick.AddListener(() => OnClickItemButton());
         unitButton.onClick.AddListener(() => OnClickUnitButton());
         buildingButton.onClick.AddListener(() => OnClickBuildingButton());
-        quitButton.onClick.AddListener(() => OnClickQuitButton());
+        informationQuitButton.onClick.AddListener(() => OnClickInformationQuitButton());
+        worldMapButton.onClick.AddListener(() => OnClickWorldMapButton());
         buildingUIManager.OnClickAddListener();
         unitUIManager.OnClickAddListener();
+        worldMapUIManager.OnClickAddListener();
     }
 
     //가입하기버튼
@@ -324,7 +333,7 @@ public class UIManager : MonoBehaviour
     }
 
     //x버튼
-    public void OnClickQuitButton()
+    public void OnClickInformationQuitButton()
     {
         currentPanel = null;
         unitUIManager.CurrentUnit = UnitId.None;
@@ -411,7 +420,15 @@ public class UIManager : MonoBehaviour
     {
         unitStateScroll = GameObject.Find("UnitStateScroll");
 
+        if (unitStateScroll != null)
+        {
+            Destroy(unitStateScroll);
+        }            
+
+        unitStateScroll = Instantiate(Resources.Load("Prefabs/UnitStateScroll")) as GameObject;
+        unitStateScroll.transform.SetParent(GameObject.Find("UnitStateData").transform);
         unitStateScroll.GetComponent<RectTransform>().localPosition = Vector3.zero;
+        unitStateScroll.GetComponent<RectTransform>().localScale = Vector3.one;
 
         if (dataManager.Unit.Length > 7)
         {
@@ -421,16 +438,20 @@ public class UIManager : MonoBehaviour
         else
         {
             unitStateScroll.GetComponent<RectTransform>().sizeDelta = new Vector2(200, 350);
-        }
+        }        
 
         for (int i = 0; i < dataManager.Unit.Length; i++)
         {
             if (dataManager.Unit[i].Id != (int)UnitId.None)
             {
-                GameObject unit = Instantiate(Resources.Load("/Prefabs/Unit")) as GameObject;
+                GameObject unit = Instantiate(Resources.Load("Prefabs/Unit")) as GameObject;
                 unit.transform.SetParent(unitStateScroll.transform);
                 float posY = 100 - (i * 50);
                 unit.GetComponent<RectTransform>().localPosition = new Vector3(0, posY, 0);
+                unit.GetComponent<RectTransform>().localScale = Vector3.one;
+                unit.transform.FindChild("UnitName").GetComponent<Text>().text = UnitDatabase.Instance.unitData[dataManager.Unit[i].Id].Name;
+                unit.transform.FindChild("UnitNum").GetComponent<Text>().text = dataManager.Unit[i].num.ToString();
+                unit.name = "unitPrefab";
             }
         }
     }
@@ -587,8 +608,9 @@ public class UIManager : MonoBehaviour
             if (dataManager.BuildTime < DateTime.Now)
             {
                 networkManager.BuildComplete();
-                buildName.text = "None";
+                buildName.text = "";
                 buildTime.text = "00:00:00";
+                dataManager.BuildBuilding = (int)BuildingId.None;
                 break;
             }
         }
@@ -597,32 +619,47 @@ public class UIManager : MonoBehaviour
     //유닛 생산 시간 체크
     public IEnumerator UnitCreateTimeCheck()
     {
-        while (dataManager.CreateUnitKind != 0)
+        Debug.Log("코루틴 시작");
+        Debug.Log(dataManager.CreateUnit.num);
+
+        while (dataManager.CreateUnit.num != 0)
         {
             yield return new WaitForFixedUpdate();
 
+            UnitUIManager.unitCreateButton.interactable = false;
+
             createUnitName.text = "";
 
-            for (int i = 0; i < dataManager.CreateUnit.Length; i++)
+            if (dataManager.CreateUnit.Id != (int)UnitId.None)
             {
-                if (dataManager.CreateUnit[i].Id != (int)UnitId.None)
-                {
-                    createUnitName.text += UnitDatabase.Instance.unitData[dataManager.CreateUnit[i].Id].Name + " x ";
-                    createUnitName.text += dataManager.CreateUnit[i].num + ", ";
-                }
+                createUnitName.text += UnitDatabase.Instance.unitData[dataManager.CreateUnit.Id].Name + " x ";
+                createUnitName.text += dataManager.CreateUnit.num;
             }
 
-            TimeSpan createTime = dataManager.UnitCreateTime - DateTime.Now + UnitDatabase.Instance.unitData[dataManager.CreateUnit[0].Id].CreateTime;
+            TimeSpan createTime = dataManager.UnitCreateTime - DateTime.Now + UnitDatabase.Instance.unitData[dataManager.CreateUnit.Id].CreateTime;
             createUnitTime.text = createTime.Hours.ToString("00") + ":" + createTime.Minutes.ToString("00") + ":" + createTime.Seconds.ToString("00");
 
             if (createTime < new TimeSpan(0))
             {
                 networkManager.UnitCreateComplete();
-                createUnitName.text = "None";
-                createUnitTime.text = "00:00:00";
                 break;
             }
         }
+
+        if (dataManager.CreateUnit.num <= 0)
+        {
+            UnitUIManager.unitCreateButton.interactable = true;
+            createUnitName.text = "";
+            createUnitTime.text = "00:00:00";
+        }
+    }
+
+    //월드맵 열기
+    public void OnClickWorldMapButton()
+    {
+        SetPanel();
+        worldMapPanel.SetActive(true);
+        worldMapUIManager.SetWorldMap();
     }
 
     //게임종료

@@ -51,6 +51,7 @@ public class DataHandler
         m_notifier.Add((int)ClientPacketId.UnitCreate, UnitCreate);
         m_notifier.Add((int)ClientPacketId.UnitCreateDataRequest, UnitCreateDataRequest);
         m_notifier.Add((int)ClientPacketId.UnitCreateComplete, UnitCreateComplete);
+        m_notifier.Add((int)ClientPacketId.PositionDataRequest, PositionDataRequest);
 
         Thread handleThread = new Thread(new ThreadStart(DataHandle));
         handleThread.Start();
@@ -267,11 +268,16 @@ public class DataHandler
         try
         {
             Console.WriteLine(tcpPacket.client.RemoteEndPoint.ToString() + "가 접속을 종료했습니다.");
-            string Id = LoginUser[tcpPacket.client];
-            database.FileSave(Id + ".data", database.GetAccountData(Id));
-            database.UserData.Remove(Id);
 
-            LoginUser.Remove(tcpPacket.client);
+            if (LoginUser.ContainsKey(tcpPacket.client))
+            {
+                string Id = LoginUser[tcpPacket.client];
+                database.FileSave(Id + ".data", database.GetAccountData(Id));
+                database.UserData.Remove(Id);
+
+                LoginUser.Remove(tcpPacket.client);
+            }
+                        
             tcpPacket.client.Close();
         }
         catch
@@ -333,20 +339,17 @@ public class DataHandler
         Console.WriteLine("유저" + Id + "유닛 데이터 요청");
 
         int unitKind = database.GetAccountData(Id).UnitKind;
-        int createUnitKind = database.GetAccountData(Id).CreateUnitKind;
-        int attackUnitKind = database.GetAccountData(Id).AttackUnitKind;
-
         Unit[] unit = database.GetAccountData(Id).Unit;
-        Unit[] createUnit = database.GetAccountData(Id).CreateUnit;
-        Unit[] attackUnit = database.GetAccountData(Id).AttackUnit;
 
-        UnitData[] unitData = new UnitData[3];
-        unitData[0] = new UnitData(unitKind, unit);
-        unitData[1] = new UnitData(createUnitKind, createUnit);
-        unitData[2] = new UnitData(attackUnitKind, attackUnit);
+        Console.WriteLine("유닛 종류 : " + unitKind);
+        for (int i = 0; i < unitKind; i++)
+        {
+            Console.WriteLine("유닛 아이디" + unit[i].Id);
+            Console.WriteLine("유닛 숫자" + unit[i].num);
+        }
 
+        UnitData unitData = new UnitData(unitKind, unit);
         UnitDataPacket unitDataPacket = new UnitDataPacket(unitData);
-
         msg = CreatePacket(unitDataPacket, ServerPacketId.UnitData);
 
         return ServerPacketId.UnitData;
@@ -482,31 +485,28 @@ public class DataHandler
 
     public ServerPacketId UnitCreate(byte[] data)
     {
+        Console.Write("유닛 생산 ");
         string Id = LoginUser[tcpPacket.client];
-
-        Console.WriteLine("아이디 : " + Id);        
 
         UnitCreatePacket unitCreatePacket = new UnitCreatePacket(data);
         UnitCreate unitCreate = unitCreatePacket.GetData();
 
-        database.GetAccountData(Id).UnitCreate(unitCreate);
+        UserData newUserData = database.GetAccountData(Id);
+        newUserData.UnitCreate(unitCreate);
         database.FileSave(Id + ".data", database.GetAccountData(Id));
-
-        Console.WriteLine("유닛생산 종류 : " + unitCreate.Id + "개수 : " + unitCreate.num);
 
         return ServerPacketId.None;
     }
 
     public ServerPacketId UnitCreateDataRequest(byte[] data)
     {
-        Console.WriteLine("유닛생산 데이터 요청");
+        Console.Write("유닛생산 데이터 요청");
         string Id = LoginUser[tcpPacket.client];
 
         UserData newUserData = database.GetAccountData(Id);
         DateTime time;
 
-        Console.WriteLine("생산 개수"+newUserData.CreateUnitKind);
-        if (newUserData.CreateUnitKind != 0)
+        if (newUserData.CreateUnit.num != 0)
         {
             time = newUserData.UnitCreateTime;
         }
@@ -514,17 +514,11 @@ public class DataHandler
         {
             time = DateTime.Now;
         }
-        int kind = newUserData.CreateUnitKind;
-        Unit[] unit = newUserData.CreateUnit;
 
-        UnitCreateData unitCreateData = new UnitCreateData(time, kind, unit);
+        Unit unit = newUserData.CreateUnit;
+
+        UnitCreateData unitCreateData = new UnitCreateData(time, unit);
         UnitCreateDataPacket unitCreateDataPacket = new UnitCreateDataPacket(unitCreateData);
-
-        Console.WriteLine("요청아이디 : " + Id);
-        Console.WriteLine("생산유닛 : " + newUserData.CreateUnitKind);
-        Console.WriteLine("시간 : " + unitCreateData.hour.ToString() + ":" + unitCreateData.minute.ToString() + ":" + unitCreateData.second.ToString());
-        Console.WriteLine(unitCreateData.unit[0].Id);
-        Console.WriteLine(unitCreateData.unit[0].num);
 
         msg = CreatePacket(unitCreateDataPacket, ServerPacketId.UnitCreateData);
 
@@ -534,12 +528,29 @@ public class DataHandler
     public ServerPacketId UnitCreateComplete(byte[] data)
     {
         string Id = LoginUser[tcpPacket.client];
-        Console.WriteLine("아이디 : " + Id);
-        Console.WriteLine("완료 유닛 : " + database.GetAccountData(Id).CreateUnit[0].Id);
+
+        UserData newUserData = database.GetAccountData(Id);
+
         database.GetAccountData(Id).UnitCreateComplete();
+
         database.FileSave(Id + ".data", database.GetAccountData(Id));
 
         return ServerPacketId.None;
+    }
+
+    public ServerPacketId PositionDataRequest(byte[] data)
+    {
+        Console.Write("성 위치 데이터 요청");
+        string Id = LoginUser[tcpPacket.client];
+
+        UserData newUserData = database.GetAccountData(Id);
+
+        PositionData positionData = new PositionData(newUserData.XPos, newUserData.YPos);
+        PositionDataPacket positionDataPacket = new PositionDataPacket(positionData);
+
+        msg = CreatePacket(positionDataPacket, ServerPacketId.PositionData);
+
+        return ServerPacketId.PositionData;
     }
 
     public void BuildChecker()

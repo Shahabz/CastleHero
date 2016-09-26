@@ -20,6 +20,8 @@ public enum HeroState
 public class UserData
 {
     string Id;
+    int xPos;
+    int yPos;
     int heroId;
     int heroLevel;
     int[] equipment;
@@ -27,11 +29,10 @@ public class UserData
     int[] inventoryNum;
     int[] skill;
     int unitKind;
-    int createUnitKind;
     int attackUnitKind;
     Unit[] unit;
-    Unit createUnit;
     Unit[] attackUnit;
+    Unit createUnit;
     DateTime unitCreateTime;
     int[] building;
     DateTime buildTime;
@@ -42,6 +43,8 @@ public class UserData
     CastleState castleState;
 
     public string ID { get { return Id; } }
+    public int XPos { get { return xPos; } }
+    public int YPos { get { return yPos; } }
     public int HeroId { get { return heroId; } }
     public int HeroLevel { get { return heroLevel; } }
     public int[] Equipment { get { return equipment; } }
@@ -49,8 +52,7 @@ public class UserData
     public int[] InventoryNum { get { return inventoryNum; } }
     public Unit[] Unit { get { return unit; } }
     public Unit CreateUnit { get { return createUnit; } }
-    public Unit[] AttackUnit { get { return attackUnit; } }
-    
+    public Unit[] AttackUnit { get { return attackUnit; } }    
     public int UnitKind
     {
         get
@@ -105,13 +107,13 @@ public class UserData
         inventoryNum = new int[invenNum];
         skill = new int[skillNum];
         unit = new Unit[unitNum];
-        createUnit = new Unit();
         attackUnit = new Unit[unitNum];
+        createUnit = new Unit();
         building = new int[buildingNum];
         buildTime = new DateTime();
         buildBuilding = buildingNum;
         upgrade = new int[unitNum];
-        resource = 0;
+        resource = 1000;
         heroState = HeroState.Stationed;
         castleState = CastleState.Peace;
 
@@ -145,6 +147,16 @@ public class UserData
         }
 
         return value;
+    }
+
+    public Position SetPosition()
+    {
+        Random random = new Random();
+        xPos = random.Next(0, 1000);
+        yPos = random.Next(0, 1000);
+        Position position = new Position(xPos, yPos);
+        Console.WriteLine(position.X + ", " + position.Y);
+        return position;
     }
 
     //레벨 변경
@@ -244,7 +256,8 @@ public class UserData
     //유닛숫자변경
     public void AddUnit(int unitId, int unitNum)
     {
-        unit[unitId - 1].num += (byte) unitNum;
+        unit[unitId].Id = (byte) unitId;
+        unit[unitId].num += (byte) unitNum;
     }
 
     //건물건설
@@ -271,16 +284,29 @@ public class UserData
 
     //유닛생산
     public void UnitCreate(UnitCreate unitCreate)
-    {
+    {        
         createUnit = new Unit(unitCreate.Id, unitCreate.num);
+
+        if (createUnit.Id != (int)UnitId.None)
+        {
+            unitCreateTime = DateTime.Now;
+        }
     }
 
     //유닛 생산 완료
     public void UnitCreateComplete()
     {
         createUnit.num--;
+        unitCreateTime += UnitDatabase.Instance.unitData[createUnit.Id].CreateTime;
+        
+        AddUnit(createUnit.Id, 1);
+
+        if (createUnit.num <= 0)
+        {
+            createUnit = new Unit((int)UnitId.None, 0);
+            unitCreateTime = DateTime.Now;
+        }
     }
 
     //유닛공격, 복귀
-
 }

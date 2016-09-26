@@ -34,6 +34,7 @@ public enum ClientPacketId
     UnitCreate,
     UnitCreateDataRequest,
     UnitCreateComplete,
+    PositionDataRequest,
 }
 
 public enum ServerPacketId
@@ -52,4 +53,5 @@ public enum ServerPacketId
     StateData,
     BuildData,
     UnitCreateData,
+    PositionData,
 }

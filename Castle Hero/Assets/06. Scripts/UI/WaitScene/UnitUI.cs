@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public class UnitUI : MonoBehaviour, IPointerDownHandler
@@ -13,6 +14,6 @@ public class UnitUI : MonoBehaviour, IPointerDownHandler
 
     public void OnPointerDown(PointerEventData eventdata)
     {
-        unitUIManager.SetUnitData(Id);
+        unitUIManager.SetUnitData(Id);        
     }
 }

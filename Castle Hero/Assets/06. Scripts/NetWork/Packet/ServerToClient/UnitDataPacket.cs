@@ -1,26 +1,25 @@
-﻿public class UnitDataPacket : IPacket<UnitData[]>
+﻿using System;
+
+public class UnitDataPacket : IPacket<UnitData>
 {
     public class UnitDataSerializer : Serializer
     {
-        public bool Serialize(UnitData[] data)
+        public bool Serialize(UnitData data)
         {
             bool ret = true;
 
-            for (int i = 0; i < data.Length; i++)
-            {
-                ret &= Serialize(data[i].unitKind);
+            ret &= Serialize(data.unitKind);
 
-                for (int j = 0; j < data[i].unitKind; j++)
-                {
-                    ret &= Serialize(data[i].unit[j].Id);
-                    ret &= Serialize(data[i].unit[j].num);
-                }
+            for (int i = 0; i < data.unitKind; i++)
+            {
+                ret &= Serialize(data.unit[i].Id);
+                ret &= Serialize(data.unit[i].num);
             }
 
             return ret;
         }
 
-        public bool Deserialize(ref UnitData[] element)
+        public bool Deserialize(ref UnitData element)
         {
             if (GetDataSize() == 0)
             {
@@ -33,37 +32,32 @@
             byte Id = 0;
             byte num = 0;
 
-            for (int i = 0; i < element.Length; i++)
+            ret &= Deserialize(ref unitKind);
+            element.unitKind = unitKind;
+
+            element.unit = new Unit[unitKind];
+
+            for (int i = 0; i < element.unitKind; i++)
             {
-                ret &= Deserialize(ref unitKind);
-                element[i].unitKind = unitKind;
-
-                element[i].unit = new Unit[element[i].unitKind];
-
-                for (int j = 0; j < element[i].unitKind; j++)
-                {
-
-                    ret &= Deserialize(ref Id);
-                    ret &= Deserialize(ref num);
-                    element[i].unit[j] = new Unit(Id, num);
-                }
+                ret &= Deserialize(ref Id);
+                ret &= Deserialize(ref num);
+                element.unit[i] = new Unit(Id, num);
             }
 
             return ret;
         }
     }
 
-    UnitData[] m_data;
+    UnitData m_data;
 
-    public UnitDataPacket(UnitData[] data) // 데이터로 초기화(송신용)
+    public UnitDataPacket(UnitData data) // 데이터로 초기화(송신용)
     {
         m_data = data;
     }
 
     public UnitDataPacket(byte[] data) // 패킷을 데이터로 변환(수신용)
     {
-        m_data = new UnitData[3];
-        for (int i = 0; i < 3; i++) { m_data[i] = new UnitData(); }
+        m_data = new UnitData();
         UnitDataSerializer serializer = new UnitDataSerializer();
         serializer.SetDeserializedData(data);
         serializer.Deserialize(ref m_data);
@@ -76,7 +70,7 @@
         return serializer.GetSerializedData();
     }
 
-    public UnitData[] GetData() // 데이터 얻기(수신용)
+    public UnitData GetData() // 데이터 얻기(수신용)
     {
         return m_data;
     }
@@ -96,9 +90,10 @@ public class UnitData
     {
         unitKind = 0;
         unit = new Unit[unitKind];
+
         for (int i = 0; i < unitKind; i++)
         {
-            unit[i] = new Unit();
+            unit[i] = new Unit((int)UnitId.None, 0);
         }
     }
 
@@ -109,11 +104,12 @@ public class UnitData
 
         for (int i = 0; i < unitKind; i++)
         {
-            unit[i] = new Unit(newUnit[i].Id, newUnit[i].num);
+            unit[i] = new Unit(newUnit[i]);
         }
     }
 }
 
+[Serializable]
 public class Unit
 {
     public byte Id;
@@ -121,7 +117,7 @@ public class Unit
 
     public Unit()
     {
-        Id = (byte)UnitId.None;
+        Id = (int)UnitId.None;
         num = 0;
     }
 
@@ -129,5 +125,11 @@ public class Unit
     {
         Id = (byte)newId;
         num = (byte)newNum;
+    }
+
+    public Unit(Unit unit)
+    {
+        Id = unit.Id;
+        num = unit.num;
     }
 }

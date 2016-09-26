@@ -41,6 +41,7 @@
     <Compile Include="Paket\Server2Client\BuildingDataPacket.cs" />
     <Compile Include="Paket\Server2Client\HeroDataPacket.cs" />
     <Compile Include="Paket\Server2Client\ItemDataPacket.cs" />
+    <Compile Include="Paket\Server2Client\PositionDataPacket.cs" />
     <Compile Include="Paket\Server2Client\ResourceDataPacket.cs" />
     <Compile Include="Paket\Server2Client\SkillDataPacket.cs" />
     <Compile Include="Paket\Server2Client\StateDataPacket.cs" />
