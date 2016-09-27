@@ -20,8 +20,8 @@ public enum HeroState
 public class UserData
 {
     string Id;
-    int xPos;
-    int yPos;
+    short xPos;
+    short yPos;
     int heroId;
     int heroLevel;
     int[] equipment;
@@ -43,8 +43,8 @@ public class UserData
     CastleState castleState;
 
     public string ID { get { return Id; } }
-    public int XPos { get { return xPos; } }
-    public int YPos { get { return yPos; } }
+    public short XPos { get { return xPos; } }
+    public short YPos { get { return yPos; } }
     public int HeroId { get { return heroId; } }
     public int HeroLevel { get { return heroLevel; } }
     public int[] Equipment { get { return equipment; } }
@@ -152,10 +152,9 @@ public class UserData
     public Position SetPosition()
     {
         Random random = new Random();
-        xPos = random.Next(0, 1000);
-        yPos = random.Next(0, 1000);
+        xPos = (short)random.Next(0, 1000);
+        yPos = (short)random.Next(0, 1000);
         Position position = new Position(xPos, yPos);
-        Console.WriteLine(position.X + ", " + position.Y);
         return position;
     }
 
@@ -306,6 +305,19 @@ public class UserData
             createUnit = new Unit((int)UnitId.None, 0);
             unitCreateTime = DateTime.Now;
         }
+    }
+
+    //유닛 숫자 반환
+    public short GetUnitNum()
+    {
+        short count = 0;
+
+        for (int i =0; i< unit.Length; i++)
+        {
+            count += unit[i].num;
+        }
+
+        return count;
     }
 
     //유닛공격, 복귀

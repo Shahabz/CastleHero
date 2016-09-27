@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Collections;
-using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
 
 public class Database
@@ -15,38 +14,49 @@ public class Database
     public Hashtable AccountData { get { return accountData; } }
     public Hashtable UserData { get { return userData;}}
     public const string accountDataFile = "AccountData.data";
-    public const string worldMapDataFile = "worldMapData.data";
+    public const string worldMapDataFile = "WorldMapData.data";
 
     BuildingDatabase buildingDatabase;
     UnitDatabase unitDatabase;
-
-    /*
-    아이디, 비밀번호 파일 : AccountData.data
-    유저 데이터 파일 : UserData.data
-    맵 데이터 파일 : MapData.data
-    */
 
     public Database()
     {
         bin = new BinaryFormatter();
         fs = new FileStream(accountDataFile, FileMode.OpenOrCreate);
 
-        if (fs.Length > 0)
-        {
-            accountData = (Hashtable)bin.Deserialize(fs);
-        }
-        else
-        {
-            accountData = new Hashtable();
-        }
+        accountData = GetData(accountDataFile);
+        worldMapData = GetData(worldMapDataFile);
 
         userData = new Hashtable();
-        worldMapData = new Hashtable();
 
         buildingDatabase = BuildingDatabase.Instance;
         buildingDatabase.InitializeBuildingDatabase();
         unitDatabase = UnitDatabase.Instance;
         unitDatabase.InitializeUnitDatabase();
+        InitializeWorldMapData();
+    }
+
+    public Hashtable GetData(string path)
+    {
+        fs.Close();    
+        fs = new FileStream(path, FileMode.OpenOrCreate);
+
+        try
+        {
+            if (fs.Length > 0)
+            {
+                return (Hashtable)bin.Deserialize(fs);
+            }
+            else
+            {
+                return new Hashtable();
+            }
+        }
+        catch
+        {
+            Console.WriteLine("Database::GetData 에러");
+            return new Hashtable();
+        }
     }
 
     public bool AddAccountData(string Id, string Pw)
@@ -62,20 +72,19 @@ public class Database
                 while (true)
                 {
                     GetAccountData(Id).SetPosition();
+
                     try
                     {
-                        AddPlaceData(PlaceType.Castle, GetAccountData(Id).XPos, GetAccountData(Id).YPos, 0, Id);
-                        Console.WriteLine(GetAccountData(Id).XPos + ", " + GetAccountData(Id).YPos);
+                        AddPlaceData((int)PlaceType.Castle, GetAccountData(Id).XPos, GetAccountData(Id).YPos, 0, Id);
                         break;
                     }
                     catch
                     {
                         Console.WriteLine("같은 위치에 생성되었습니다");
-                    }                
-                }                
+                    }
+                }
 
                 FileSave(worldMapDataFile, worldMapData);
-
                 return true;
             }
             else
@@ -169,17 +178,41 @@ public class Database
         return newUserData;
     }
 
-    public void AddPlaceData(PlaceType placeType, int xPos, int yPos, int level, string Id)
+    public void AddPlaceData(int placeType, short xPos, short yPos, int level, string Id)
     {
-        try
+        if (!worldMapData.ContainsKey(xPos * 1000 + yPos))
         {
-            worldMapData.Add(new Position(xPos, yPos), new Place(placeType, new Position(xPos, yPos), level, Id));
+            worldMapData.Add(xPos * 1000 + yPos, new Place(placeType, new Position(xPos, yPos), level, Id));
         }
-        catch
+        else
         {
             Console.WriteLine("이미 있는 위치에 생성합니다.");
         }
-        
+    }
+
+    public Place GetPlaceData(int xPos, int yPos)
+    {
+        return (Place) worldMapData[xPos * 100 + yPos];
+    }
+
+    public Place[] GetWorldMapData()
+    {
+        Place[] worldMap = new Place[worldMapData.Count];
+        int i = 0;
+
+        foreach (DictionaryEntry place in worldMapData)
+        {
+            worldMap[i++] = (Place) place.Value;
+        }
+
+        return worldMap;
+    }
+
+    public void InitializeWorldMapData()
+    {
+        AddPlaceData((int)PlaceType.Castle, 0, 0, 1, "Monster");
+        AddPlaceData((int)PlaceType.Dungeon, 10, 0, 5, "StrongMonster");
+        FileSave(worldMapDataFile, worldMapData);
     }
 
     public bool FileSave(string path, object data)
@@ -207,7 +240,6 @@ public class Database
 
         return true;
     }
-
 }
 
 [Serializable]
@@ -230,30 +262,35 @@ public enum PlaceType
 {
     Castle,
     Resources,
-    Deungeon,
+    Dungeon,
     None,
 }
 
 [Serializable]
 public class Place
 {
-    public PlaceType placeType;
+    byte type;
     Position position;
-    int level;
+    byte level;
     string Id;
+
+    public byte Type { get { return type; } }
+    public Position Position { get { return position; } }
+    public byte Level { get { return level; } }
+    public string ID { get { return Id; } }
 
     public Place()
     {
-        placeType = PlaceType.Castle;
+        type = (int) PlaceType.Castle;
         position = new Position(0, 0);
         level = 0;
     }
 
-    public Place(PlaceType newPlaceType, Position newPos, int newLevel, string newId)
+    public Place(int newPlaceType, Position newPos, int newLevel, string newId)
     {
-        placeType = newPlaceType;
+        type = (byte)newPlaceType;
         position = new Position(newPos);
-        level = newLevel;
+        level = (byte)newLevel;
         Id = newId;
     }
 }
@@ -261,11 +298,11 @@ public class Place
 [Serializable]
 public class Position
 {
-    int x;
-    int y;
+    short x;
+    short y;
 
-    public int X { get { return x; } }
-    public int Y { get { return y; } }
+    public short X { get { return x; } }
+    public short Y { get { return y; } }
 
     public Position(Position position)
     {
@@ -273,7 +310,7 @@ public class Position
         y = position.y;
     }
 
-    public Position(int _x, int _y)
+    public Position(short _x, short _y)
     {
         x = _x;
         y = _y;

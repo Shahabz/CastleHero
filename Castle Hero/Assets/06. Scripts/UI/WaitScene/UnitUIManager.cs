@@ -6,6 +6,7 @@ public class UnitUIManager
     DataManager dataManager;
     NetworkManager networkManager;
 
+    GameObject unitPanel;
     public GameObject unitImage;
     public GameObject unitState;
 
@@ -41,6 +42,7 @@ public class UnitUIManager
 
     public void SetUIObject()
     {
+        unitPanel = GameObject.Find("UnitPanel");
         unitImage = GameObject.Find("UnitImage");
         unitState = GameObject.Find("UnitState");
 
@@ -60,6 +62,7 @@ public class UnitUIManager
         unitCreateNum = GameObject.Find("UnitCreateNum").GetComponent<Text>();
 
         unitState.SetActive(false);
+        unitPanel.SetActive(false);
     }
 
     public void SetUnitLevel()

@@ -51,6 +51,7 @@ class DataManager : MonoBehaviour
     [SerializeField] int resource;
     [SerializeField] HeroState heroState;
     [SerializeField] CastleState castleState;
+    [SerializeField] Place[] worldMap;
 
     public string ID { get { return Id; } }
     public int XPos { get { return xPos; } }
@@ -99,6 +100,7 @@ class DataManager : MonoBehaviour
     public int Resource { get { return resource; } }
     public HeroState HState { get { return heroState; } }
     public CastleState CState { get { return castleState; } }
+    public Place[] WorldMap { get { return worldMap; } }
 
     void Awake()
     {
@@ -242,9 +244,67 @@ class DataManager : MonoBehaviour
         }
     }
 
-    public void SetPositionData(PositionData positionData)
+    public void SetPlaceData(Place[] placeData)
     {
-        xPos = positionData.xPos;
-        yPos = positionData.yPos;
+        worldMap = placeData;
+    }
+}
+
+public enum PlaceType
+{
+    Castle,
+    Resources,
+    Dungeon,
+    None,
+}
+
+[Serializable]
+public class Place
+{
+    int type;
+    Position position;
+    int level;
+    string Id;
+
+    public int Type { get { return type; } }
+    public Position Position { get { return position; } }
+    public int Level { get { return level; } }
+    public string ID { get { return Id; } }
+
+    public Place()
+    {
+        type = (int)PlaceType.Castle;
+        position = new Position(0, 0);
+        level = 0;
+    }
+
+    public Place(int newPlaceType, Position newPos, int newLevel, string newId)
+    {
+        type = newPlaceType;
+        position = new Position(newPos);
+        level = newLevel;
+        Id = newId;
+    }
+}
+
+[Serializable]
+public class Position
+{
+    short x;
+    short y;
+
+    public short X { get { return x; } }
+    public short Y { get { return y; } }
+
+    public Position(Position position)
+    {
+        x = position.x;
+        y = position.y;
+    }
+
+    public Position(short _x, short _y)
+    {
+        x = _x;
+        y = _y;
     }
 }

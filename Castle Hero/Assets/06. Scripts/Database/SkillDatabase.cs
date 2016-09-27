@@ -43,10 +43,8 @@ public class Skill
 
 public class ActiveSkill : Skill
 {
-    float readyTime;
-    float afterActionTime;
-    float castRange;
-    int damage;
-
-    
+    //float readyTime;
+    //float afterActionTime;
+    //float castRange;
+    //int damage;   
 }

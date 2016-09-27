@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] UIManager uiManager;
     [SerializeField] LoadingManager loadingManager;
     [SerializeField] DataManager dataManager;
+    [SerializeField] BattleManager battleManager;
 
     void Awake()
     {
@@ -32,10 +33,12 @@ public class GameManager : MonoBehaviour
         uiManager = (Instantiate(Resources.Load("Prefabs/Manager/UIManager") as GameObject)).GetComponent<UIManager>();
         loadingManager = (Instantiate(Resources.Load("Prefabs/Manager/LoadingManager") as GameObject)).GetComponent<LoadingManager>();
         dataManager = (Instantiate(Resources.Load("Prefabs/Manager/DataManager") as GameObject)).GetComponent<DataManager>();
-
+        battleManager = (Instantiate(Resources.Load("Prefabs/Manager/BattleManager") as GameObject)).GetComponent<BattleManager>();
+        
         networkManager.ManagerInitialize();
         uiManager.ManagerInitialize();
         loadingManager.ManagerInitialize();
+        battleManager.ManagerInitialize();
     }
 
     public void ManagerDestory()
@@ -44,6 +47,7 @@ public class GameManager : MonoBehaviour
         Destroy(uiManager.gameObject);
         Destroy(loadingManager.gameObject);
         Destroy(dataManager.gameObject);
+        Destroy(battleManager.gameObject);
         Destroy(gameObject);
     }
 

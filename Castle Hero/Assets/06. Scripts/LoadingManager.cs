@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 public class LoadingManager : MonoBehaviour
 {
     public const int waitData = 11;
+    public const int battleData = 1;
 
     public bool[] dataCheck;
     [SerializeField] bool loadEnd;
@@ -13,6 +14,7 @@ public class LoadingManager : MonoBehaviour
     GameManager gameManager;
     NetworkManager networkManager;
     UIManager uiManager;
+    BattleManager battleManager;
 
     public GameManager.Scene CurrentScene { get { return currentScene; } }
 
@@ -28,6 +30,7 @@ public class LoadingManager : MonoBehaviour
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        battleManager = GameObject.FindGameObjectWithTag("BattleManager").GetComponent<BattleManager>();
     }
 
     public void InitializeDataCheck()
@@ -89,8 +92,32 @@ public class LoadingManager : MonoBehaviour
         StartCoroutine(LoadStateData());
         StartCoroutine(LoadBuildData());
         StartCoroutine(LoadUnitCreateData());
-        StartCoroutine(LoadPositionData());
+        StartCoroutine(LoadPlaceData());
         StartCoroutine(LoadingEndCheck(GameManager.Scene.Wait));
+    }
+
+    public void LoadLoginScene()
+    {
+        StopAllCoroutines();
+
+        dataCheck = new bool[1];
+        InitializeDataCheck();
+        loadEnd = false;
+
+        StartCoroutine(InitializeData());
+        StartCoroutine(LoadingEndCheck(GameManager.Scene.Login));
+    }
+
+    public void LoadBattleScene()
+    {
+        StopAllCoroutines();
+
+        dataCheck = new bool[battleData];
+        InitializeDataCheck();
+        loadEnd = false;
+
+        StartCoroutine(LoadEnemyUnitData());
+        StartCoroutine(LoadingEndCheck(GameManager.Scene.Battle));
     }
 
     public IEnumerator LoadHeroData()
@@ -183,25 +210,22 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
-    public IEnumerator LoadPositionData()
+    public IEnumerator LoadPlaceData()
     {
-        while (!dataCheck[(int)ServerPacketId.PositionData - 4])
+        while (!dataCheck[(int)ServerPacketId.PlaceData - 4])
         {
-            networkManager.DataRequest(ClientPacketId.PositionDataRequest);
+            networkManager.DataRequest(ClientPacketId.PlaceDataRequest);
             yield return new WaitForSeconds(1f);
         }
     }
 
-    public void LoadLoginScene()
+    public IEnumerator LoadEnemyUnitData()
     {
-        StopAllCoroutines();
-
-        dataCheck = new bool[1];
-        InitializeDataCheck();
-        loadEnd = false;
-
-        StartCoroutine(InitializeData());
-        StartCoroutine(LoadingEndCheck(GameManager.Scene.Login));
+        while (!dataCheck[(int)ServerPacketId.EnemyUnitData - 16])
+        {
+            networkManager.DataRequest(ClientPacketId.EnemyUnitDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
     }
 
     public IEnumerator InitializeData()
@@ -218,7 +242,6 @@ public class LoadingManager : MonoBehaviour
         yield return new WaitForSeconds(delayTime);
         SceneManager.LoadScene((int) GameManager.Scene.Loading);
         currentScene = GameManager.Scene.Loading;
-        Debug.Log("로딩씬 로드");
 
         if (NextScene == GameManager.Scene.Wait)
         {
@@ -228,30 +251,27 @@ public class LoadingManager : MonoBehaviour
         {
             LoadLoginScene();
         }
+        else if (NextScene == GameManager.Scene.Battle)
+        {
+            LoadBattleScene();
+        }
     }
 
     void OnLevelWasLoaded(int level)
     {
-        if (level == (int)GameManager.Scene.Login)
+        if (level == (int)GameManager.Scene.Wait)
         {
-            
-        }
-
-        else if (level == (int)GameManager.Scene.Wait)
-        {
-            
             uiManager.SetState();
-            uiManager.SetUIManager();
             uiManager.SetWaitUIObject();
             uiManager.SetUnitScrollView();
             uiManager.WaitSceneAddListener();
+            uiManager.InformationPanel.SetActive(false);
             StartCoroutine(uiManager.BuildTimeCheck());
             StartCoroutine(uiManager.UnitCreateTimeCheck());
         }
-        else if(level == (int)GameManager.Scene.Loading)
+        else if (level == (int)GameManager.Scene.Battle)
         {
-
+            battleManager.SetSpawnPoint();
         }
-
     }
 }

@@ -10,7 +10,7 @@ public class UIManager : MonoBehaviour
 
     UnitUIManager unitUIManager;
     BuildingUIManager buildingUIManager;
-    WorldMapUIManager worldMapUIManager;
+    [SerializeField]WorldMapUIManager worldMapUIManager;
     public BuildingUIManager BuildingUIManager { get { return buildingUIManager; } }
     public UnitUIManager UnitUIManager { get { return unitUIManager; } }
     public WorldMapUIManager WorldMapUIManager { get { return worldMapUIManager; } }
@@ -91,6 +91,8 @@ public class UIManager : MonoBehaviour
 
     public BuildingId currentBuilding;
 
+    public GameObject InformationPanel { get { return informationPanel; } }
+
     void Awake()
     {
         tag = "UIManager";
@@ -114,16 +116,8 @@ public class UIManager : MonoBehaviour
         unitUIManager.ManagerInitialize();
         buildingUIManager = new BuildingUIManager();
         buildingUIManager.ManagerInitialize();
-        worldMapUIManager = new WorldMapUIManager();
+        worldMapUIManager = GetComponent<WorldMapUIManager>();
         worldMapUIManager.ManagerInitialize();
-    }
-
-    //UI매니저 초기화
-    public void SetUIManager()
-    {
-        unitUIManager.SetUIObject();
-        buildingUIManager.SetUIObject();
-        worldMapUIManager.SetUIObject();
     }
 
     //로그인씬 패널, 버튼, 텍스트 설정
@@ -206,10 +200,10 @@ public class UIManager : MonoBehaviour
 
         statusPanel.SetActive(false);
         itemPanel.SetActive(false);
-        unitPanel.SetActive(false);
-        buildingPanel.SetActive(false);
-        informationPanel.SetActive(false);
-        worldMapPanel.SetActive(false);
+
+        unitUIManager.SetUIObject();
+        buildingUIManager.SetUIObject();
+        worldMapUIManager.SetUIObject();
     }
 
     //로그인씬 버튼 이벤트 설정
@@ -239,9 +233,9 @@ public class UIManager : MonoBehaviour
         buildingButton.onClick.AddListener(() => OnClickBuildingButton());
         informationQuitButton.onClick.AddListener(() => OnClickInformationQuitButton());
         worldMapButton.onClick.AddListener(() => OnClickWorldMapButton());
+        worldMapUIManager.OnClickAddListener();
         buildingUIManager.OnClickAddListener();
         unitUIManager.OnClickAddListener();
-        worldMapUIManager.OnClickAddListener();
     }
 
     //가입하기버튼
@@ -619,9 +613,6 @@ public class UIManager : MonoBehaviour
     //유닛 생산 시간 체크
     public IEnumerator UnitCreateTimeCheck()
     {
-        Debug.Log("코루틴 시작");
-        Debug.Log(dataManager.CreateUnit.num);
-
         while (dataManager.CreateUnit.num != 0)
         {
             yield return new WaitForFixedUpdate();

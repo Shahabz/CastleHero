@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Threading;
 using System.Net.Sockets;
 using System.Collections.Generic;
@@ -51,7 +52,8 @@ public class DataHandler
         m_notifier.Add((int)ClientPacketId.UnitCreate, UnitCreate);
         m_notifier.Add((int)ClientPacketId.UnitCreateDataRequest, UnitCreateDataRequest);
         m_notifier.Add((int)ClientPacketId.UnitCreateComplete, UnitCreateComplete);
-        m_notifier.Add((int)ClientPacketId.PositionDataRequest, PositionDataRequest);
+        m_notifier.Add((int)ClientPacketId.PlaceDataRequest, PlaceDataRequest);
+        m_notifier.Add((int)ClientPacketId.EnemyUnitNumRequest, EnemyUnitNumRequest);
 
         Thread handleThread = new Thread(new ThreadStart(DataHandle));
         handleThread.Start();
@@ -538,19 +540,42 @@ public class DataHandler
         return ServerPacketId.None;
     }
 
-    public ServerPacketId PositionDataRequest(byte[] data)
+    public ServerPacketId PlaceDataRequest(byte[] data)
     {
-        Console.Write("성 위치 데이터 요청");
+        Console.WriteLine("성 위치 데이터 요청");
         string Id = LoginUser[tcpPacket.client];
 
         UserData newUserData = database.GetAccountData(Id);
 
-        PositionData positionData = new PositionData(newUserData.XPos, newUserData.YPos);
-        PositionDataPacket positionDataPacket = new PositionDataPacket(positionData);
+        Place[] placeData = database.GetWorldMapData();
+        PlaceDataPacket positionDataPacket = new PlaceDataPacket(placeData);
 
-        msg = CreatePacket(positionDataPacket, ServerPacketId.PositionData);
+        msg = CreatePacket(positionDataPacket, ServerPacketId.PlaceData);
 
-        return ServerPacketId.PositionData;
+        return ServerPacketId.PlaceData;
+    }
+
+    public ServerPacketId EnemyUnitNumRequest(byte[] data)
+    {
+        Console.WriteLine("적 유닛 숫자 데이터 요청");
+
+        string Id = Encoding.Unicode.GetString(data);
+
+        UserData newUserData = database.GetAccountData(Id);
+        
+        msg = CreateResultPacket(BitConverter.GetBytes(newUserData.GetUnitNum()), ServerPacketId.EnemyUnitNumData);
+
+        return ServerPacketId.EnemyUnitNumData;
+    }
+
+    public ServerPacketId EnemyUnitDataRequest(byte[] data)
+    {
+        if ()
+        {
+
+        }
+
+        return ServerPacketId.EnemyUnitData;
     }
 
     public void BuildChecker()

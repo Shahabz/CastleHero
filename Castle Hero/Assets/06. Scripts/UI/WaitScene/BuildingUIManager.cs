@@ -7,6 +7,7 @@ public class BuildingUIManager
     NetworkManager networkManager;
 
     //패널
+    public GameObject buildingPanel;
     public GameObject buildPanel;
 
     //이미지
@@ -56,6 +57,7 @@ public class BuildingUIManager
 
     public void SetUIObject()
     {
+        buildingPanel = GameObject.Find("BuildingPanel");
         buildPanel = GameObject.Find("BuildPanel");
 
         buildingImage = GameObject.Find("BuildingImage");
@@ -84,6 +86,7 @@ public class BuildingUIManager
 
         buildPanel.SetActive(false);
         buildingState.SetActive(false);
+        buildingPanel.SetActive(false);
     }
 
     //건물 UI 셋팅

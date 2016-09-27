@@ -77,6 +77,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\06. Scripts\BattleManager.cs" />
     <Compile Include="Assets\06. Scripts\DataManager.cs" />
     <Compile Include="Assets\06. Scripts\Database\BuildingDatabase.cs" />
     <Compile Include="Assets\06. Scripts\Database\HeroDatabase.cs" />
@@ -96,7 +97,7 @@
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\BuildingDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\HeroDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\ItemDataPacket.cs" />
-    <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\PositionDataPacket.cs" />
+    <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\PlaceDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\ResourceDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\SkillDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ServerToClient\StateDataPacket.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="Assets\06. Scripts\UI\UIManager.cs" />
     <Compile Include="Assets\06. Scripts\UI\WaitScene\BuildingUI.cs" />
     <Compile Include="Assets\06. Scripts\UI\WaitScene\BuildingUIManager.cs" />
+    <Compile Include="Assets\06. Scripts\UI\WaitScene\WorldMapUI.cs" />
     <Compile Include="Assets\06. Scripts\UI\WaitScene\UnitUI.cs" />
     <Compile Include="Assets\06. Scripts\UI\WaitScene\UnitUIManager.cs" />
     <Compile Include="Assets\06. Scripts\UI\WaitScene\WorldMapUIManager.cs" />

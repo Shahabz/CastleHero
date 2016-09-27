@@ -28,9 +28,10 @@ public class NetworkManager : MonoBehaviour
     public delegate void RecvNotifier(byte[] data);
     private Dictionary<int, RecvNotifier> m_notifier = new Dictionary<int, RecvNotifier>();
 
-    [SerializeField] UIManager uiManager;
-    [SerializeField] DataManager dataManager;
-    [SerializeField] LoadingManager loadingManager;
+    UIManager uiManager;
+    DataManager dataManager;
+    LoadingManager loadingManager;
+    BattleManager battleManager;
 
     void Awake()
     {
@@ -80,6 +81,7 @@ public class NetworkManager : MonoBehaviour
         uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         dataManager = GameObject.FindGameObjectWithTag("DataManager").GetComponent<DataManager>();
         loadingManager = GameObject.FindGameObjectWithTag("LoadingManager").GetComponent<LoadingManager>();
+        battleManager = GameObject.FindGameObjectWithTag("BattleManager").GetComponent<BattleManager>();
     }
 
     void SetServerConnection()
@@ -98,7 +100,9 @@ public class NetworkManager : MonoBehaviour
         m_notifier.Add((int)ServerPacketId.StateData, OnReceivedStateData);
         m_notifier.Add((int)ServerPacketId.BuildData, OnReceivedBuildData);
         m_notifier.Add((int)ServerPacketId.UnitCreateData, OnReceivedUnitCreateData);
-        m_notifier.Add((int)ServerPacketId.PositionData, OnReceivedPositionData);
+        m_notifier.Add((int)ServerPacketId.PlaceData, OnReceivedPlaceData);
+        m_notifier.Add((int)ServerPacketId.EnemyUnitNumData, OnReceivedEnemyUnitNumData);
+        m_notifier.Add((int)ServerPacketId.EnemyUnitData, OnReceivedEnemyUnitData); 
     }
 
     public void GameExit()
@@ -319,8 +323,6 @@ public class NetworkManager : MonoBehaviour
     {
         UnitCreateDataPacket unitCreateDataPacket = new UnitCreateDataPacket(msg);
         UnitCreateData unitCreateData = unitCreateDataPacket.GetData();
-        Debug.Log(" 생산유닛 : " + unitCreateData.unit.Id + " 생산개수 : " + unitCreateData.unit.num);
-        Debug.Log("시간 : " + unitCreateData.hour.ToString() + ":" + unitCreateData.minute.ToString() + ":" + unitCreateData.second.ToString());
 
         dataManager.SetUnitCreateData(unitCreateData);
 
@@ -334,14 +336,29 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-    void OnReceivedPositionData(byte[] msg)
+    void OnReceivedPlaceData(byte[] msg)
     {
-        PositionDataPacket positionDataPacket = new PositionDataPacket(msg);
-        PositionData positionData = positionDataPacket.GetData();
+        PlaceDataPacket placeDataPacket = new PlaceDataPacket(msg);
+        Place[] placeData = placeDataPacket.GetData();
 
-        dataManager.SetPositionData(positionData);
+        dataManager.SetPlaceData(placeData);
 
-        loadingManager.dataCheck[(int)ServerPacketId.PositionData - 4] = true;
+        loadingManager.dataCheck[(int)ServerPacketId.PlaceData - 4] = true;
+    }
+
+    void OnReceivedEnemyUnitNumData(byte[] msg)
+    {
+        short unitNum = BitConverter.ToInt16(msg, 0);
+        uiManager.WorldMapUIManager.SetUnitNum(unitNum);
+    }
+
+    void OnReceivedEnemyUnitData(byte[] msg)
+    {
+        UnitDataPacket unitDataPacket = new UnitDataPacket(msg);
+        UnitData unitData = unitDataPacket.GetData();
+        battleManager.SetAwayUnit(unitData.unit);
+
+        loadingManager.dataCheck[(int)ServerPacketId.EnemyUnitData - 16] = true;
     }
 
     public void CreateAccount(string Id, string Pw)
