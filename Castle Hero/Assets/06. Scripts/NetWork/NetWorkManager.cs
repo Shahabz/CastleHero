@@ -100,6 +100,7 @@ public class NetworkManager : MonoBehaviour
         m_notifier.Add((int)ServerPacketId.StateData, OnReceivedStateData);
         m_notifier.Add((int)ServerPacketId.BuildData, OnReceivedBuildData);
         m_notifier.Add((int)ServerPacketId.UnitCreateData, OnReceivedUnitCreateData);
+        m_notifier.Add((int)ServerPacketId.MyPositionData, OnReceivedMyPositionData);
         m_notifier.Add((int)ServerPacketId.PlaceData, OnReceivedPlaceData);
         m_notifier.Add((int)ServerPacketId.EnemyUnitNumData, OnReceivedEnemyUnitNumData);
         m_notifier.Add((int)ServerPacketId.EnemyUnitData, OnReceivedEnemyUnitData); 
@@ -336,6 +337,13 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
+    void OnReceivedMyPositionData(byte[] msg)
+    {
+        PositionDataPacket positionDataPacket = new PositionDataPacket(msg);
+        Position position = positionDataPacket.GetData();
+        dataManager.SetMyPosition(position);
+    }
+
     void OnReceivedPlaceData(byte[] msg)
     {
         PlaceDataPacket placeDataPacket = new PlaceDataPacket(msg);
@@ -358,7 +366,7 @@ public class NetworkManager : MonoBehaviour
         UnitData unitData = unitDataPacket.GetData();
         battleManager.SetAwayUnit(unitData.unit);
 
-        loadingManager.dataCheck[(int)ServerPacketId.EnemyUnitData - 16] = true;
+        loadingManager.dataCheck[(int)ServerPacketId.EnemyUnitData - 17] = true;
     }
 
     public void CreateAccount(string Id, string Pw)
@@ -434,6 +442,14 @@ public class NetworkManager : MonoBehaviour
         DataRequest(ClientPacketId.UnitCreateComplete);
         DataRequest(ClientPacketId.UnitDataRequest);
         DataRequest(ClientPacketId.UnitCreateDataRequest);
+    }
+
+    public void EnemyUnitDataRequest(Position position)
+    {
+        PositionDataPacket positionDataPacket = new PositionDataPacket(position);
+        byte[] msg = CreatePacket(positionDataPacket, ClientPacketId.EnemyUnitDataRequest);
+
+        sendMsg.Enqueue(msg);
     }
 
     byte[] CreateHeader<T>(IPacket<T> data, ClientPacketId Id)

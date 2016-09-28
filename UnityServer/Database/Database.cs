@@ -38,7 +38,7 @@ public class Database
 
     public Hashtable GetData(string path)
     {
-        fs.Close();    
+        fs.Close();
         fs = new FileStream(path, FileMode.OpenOrCreate);
 
         try
@@ -65,9 +65,7 @@ public class Database
         {
             if (!accountData.Contains(Id))
             {
-                accountData.Add(Id, new LoginData(Id, Pw));
-                FileSave(accountDataFile, accountData);
-                FileSave(Id + ".data", new UserData(Id));
+                accountData.Add(Id, new LoginData(Id, Pw));                
 
                 while (true)
                 {
@@ -84,6 +82,8 @@ public class Database
                     }
                 }
 
+                FileSave(accountDataFile, accountData);
+                FileSave(Id + ".data", new UserData(Id));
                 FileSave(worldMapDataFile, worldMapData);
                 return true;
             }
@@ -206,6 +206,18 @@ public class Database
         }
 
         return worldMap;
+    }
+
+    public Place GetPlaceData(int placeNum)
+    {
+        if (worldMapData.Contains(placeNum))
+        {
+            return (Place)worldMapData[placeNum];
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public void InitializeWorldMapData()

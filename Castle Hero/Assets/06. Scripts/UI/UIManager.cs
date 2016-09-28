@@ -229,8 +229,10 @@ public class UIManager : MonoBehaviour
         logoutButton.onClick.AddListener(() => OnClickLogoutButton());
         statusButton.onClick.AddListener(() => OnCLickStatusButton());
         equipmentButton.onClick.AddListener(() => OnClickItemButton());
+        skillButton.onClick.AddListener(() => OnClickSkillButton());
         unitButton.onClick.AddListener(() => OnClickUnitButton());
         buildingButton.onClick.AddListener(() => OnClickBuildingButton());
+        upgradeButton.onClick.AddListener(() => OnClickUpgradeButton());
         informationQuitButton.onClick.AddListener(() => OnClickInformationQuitButton());
         worldMapButton.onClick.AddListener(() => OnClickWorldMapButton());
         worldMapUIManager.OnClickAddListener();
@@ -365,6 +367,12 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    //스킬 버튼
+    public void OnClickSkillButton()
+    {
+
+    }
+
     //유닛 버튼
     public void OnClickUnitButton()
     {
@@ -389,6 +397,11 @@ public class UIManager : MonoBehaviour
             currentPanel = buildingPanel;
             buildingUIManager.SetBuilding();
         }
+    }
+
+    public void OnClickUpgradeButton()
+    {
+
     }
 
     //패널 끄기
@@ -417,12 +430,13 @@ public class UIManager : MonoBehaviour
         if (unitStateScroll != null)
         {
             Destroy(unitStateScroll);
-        }            
+        }
 
         unitStateScroll = Instantiate(Resources.Load("Prefabs/UnitStateScroll")) as GameObject;
         unitStateScroll.transform.SetParent(GameObject.Find("UnitStateData").transform);
         unitStateScroll.GetComponent<RectTransform>().localPosition = Vector3.zero;
         unitStateScroll.GetComponent<RectTransform>().localScale = Vector3.one;
+        unitStateScroll.name = "UnitStateScroll";
 
         if (dataManager.Unit.Length > 7)
         {

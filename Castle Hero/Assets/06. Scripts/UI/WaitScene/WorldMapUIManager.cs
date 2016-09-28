@@ -6,6 +6,7 @@ public class WorldMapUIManager : MonoBehaviour
     DataManager dataManager;
     NetworkManager networkManager;
     LoadingManager loadingManager;
+    BattleManager battleManager;
 
     //패널
     GameObject worldMapPanel;
@@ -35,6 +36,7 @@ public class WorldMapUIManager : MonoBehaviour
         dataManager = GameObject.FindGameObjectWithTag("DataManager").GetComponent<DataManager>();
         networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
         loadingManager = GameObject.FindGameObjectWithTag("LoadingManager").GetComponent<LoadingManager>();
+        battleManager = GameObject.FindGameObjectWithTag("BattleManager").GetComponent<BattleManager>();
     }
 
     public void OnClickAddListener()
@@ -93,15 +95,15 @@ public class WorldMapUIManager : MonoBehaviour
     {
         if (placeType == (int)PlaceType.Castle)
         {
-            return (Instantiate(Resources.Load("Prefabs/Castle")) as GameObject);
+            return (Instantiate(Resources.Load("Prefabs/WorldMap/Castle")) as GameObject);
         }
         else if (placeType == (int)PlaceType.Dungeon)
         {
-            return (Instantiate(Resources.Load("Prefabs/Dungeon")) as GameObject);
+            return (Instantiate(Resources.Load("Prefabs/WorldMap/Dungeon")) as GameObject);
         }
         else if (placeType == (int)PlaceType.Resources)
         {
-            return (Instantiate(Resources.Load("Prefabs/Resources")) as GameObject);
+            return (Instantiate(Resources.Load("Prefabs/WorldMap/Resources")) as GameObject);
         }
 
         return null;
@@ -113,7 +115,7 @@ public class WorldMapUIManager : MonoBehaviour
         worldMapExplanation.SetActive(true);
         placeName.text = newPlaceName;
         ownerName.text = newOwnerName;
-        distance.text = new Vector2(dataManager.XPos - x, dataManager.YPos - y).magnitude.ToString("####");
+        distance.text = new Vector2(dataManager.XPos - x, dataManager.YPos - y).magnitude.ToString("###0");
 
         int unit = 0;
 
@@ -179,7 +181,8 @@ public class WorldMapUIManager : MonoBehaviour
     //공격 하기 버튼
     public void OnClickAttackButton()
     {
-        loadingManager.LoadScene(GameManager.Scene.Wait, GameManager.Scene.Battle, 1.0f);
+        battleManager.SetAttackPos(currentPlace.GetComponent<WorldMapUI>().X, currentPlace.GetComponent<WorldMapUI>().Y);
+        StartCoroutine(loadingManager.LoadScene(GameManager.Scene.Wait, GameManager.Scene.Battle, 1.0f));
     }
 
     //공격 취소 버튼

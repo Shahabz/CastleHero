@@ -36,10 +36,10 @@
     <Compile Include="Database\BuildingDatabase.cs" />
     <Compile Include="Database\UnitDatabase.cs" />
     <Compile Include="Paket\Client2Server\BuildPacket.cs" />
+    <Compile Include="Paket\Client2Server\PositionDataPacket.cs" />
     <Compile Include="Paket\Client2Server\UnitCreatePacket.cs" />
     <Compile Include="Paket\Server2Client\BuildDataPacket.cs" />
     <Compile Include="Paket\Server2Client\BuildingDataPacket.cs" />
-    <Compile Include="Paket\Server2Client\EnemyUnitDataPacket.cs" />
     <Compile Include="Paket\Server2Client\HeroDataPacket.cs" />
     <Compile Include="Paket\Server2Client\ItemDataPacket.cs" />
     <Compile Include="Paket\Server2Client\PlaceDataPacket.cs" />

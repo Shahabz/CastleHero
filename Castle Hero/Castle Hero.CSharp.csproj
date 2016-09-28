@@ -77,7 +77,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\06. Scripts\BattleManager.cs" />
+    <Compile Include="Assets\06. Scripts\Battle\BattleManager.cs" />
+    <Compile Include="Assets\06. Scripts\Battle\UnitAI.cs" />
     <Compile Include="Assets\06. Scripts\DataManager.cs" />
     <Compile Include="Assets\06. Scripts\Database\BuildingDatabase.cs" />
     <Compile Include="Assets\06. Scripts\Database\HeroDatabase.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="Assets\06. Scripts\NetWork\NetworkManager.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ClientToServer\AccountPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ClientToServer\BuildPacket.cs" />
+    <Compile Include="Assets\06. Scripts\NetWork\Packet\ClientToServer\PositionDataPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\ClientToServer\UnitCreatePacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\IPacket.cs" />
     <Compile Include="Assets\06. Scripts\NetWork\Packet\PacketId.cs" />
@@ -115,5 +117,6 @@
     <Compile Include="Assets\06. Scripts\UI\WaitScene\UnitUIManager.cs" />
     <Compile Include="Assets\06. Scripts\UI\WaitScene\WorldMapUIManager.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

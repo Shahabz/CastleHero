@@ -3,22 +3,23 @@ using UnityEngine.EventSystems;
 
 public class WorldMapUI : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler
 {
-    UIManager uiManager;
     WorldMapUIManager worldMapUIManager;
 
     string placeName;
     int level;
-    int x;
-    int y;
+    short x;
+    short y;
     int placeType;
+
+    public short X { get { return x; } }
+    public short Y { get { return y; } }
 
     void Start()
     {
-        uiManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>();
         worldMapUIManager = GameObject.FindGameObjectWithTag("UIManager").GetComponent<UIManager>().WorldMapUIManager;
     }
 
-    public void SetPlace(string newName, int newLevel, int newX, int newY, int newPlaceType)
+    public void SetPlace(string newName, int newLevel, short newX, short newY, int newPlaceType)
     {
         placeName = newName;
         level = newLevel;
@@ -46,7 +47,6 @@ public class WorldMapUI : MonoBehaviour, IPointerEnterHandler, IPointerDownHandl
             {
                 worldMapUIManager.toolTipPlaceName.text = "자원지";
             }
-
         }
         else
         {

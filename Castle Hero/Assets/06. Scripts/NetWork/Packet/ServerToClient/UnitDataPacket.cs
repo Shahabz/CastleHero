@@ -109,7 +109,6 @@ public class UnitData
     }
 }
 
-[Serializable]
 public class Unit
 {
     public byte Id;

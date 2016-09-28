@@ -34,7 +34,7 @@ class UnitDatabase
     {
         unitData = new List<UnitBaseData>();
 
-        unitData.Add(new UnitBaseData(UnitId.Gladiator, "Gladiator", "검과 방패를 쓰는 검투사이다. 이동속도는 느리지만 근접전투에 강하다.", new TimeSpan(0, 0, 45), 100, 18));
+        unitData.Add(new UnitBaseData(UnitId.Gladiator, "Gladiator", "검과 방패를 쓰는 검투사이다. 이동속도는 느리지만 근접전투에 강하다.", new TimeSpan(0, 0, 45), 100, 1, 18));
         unitData[(int)UnitId.Gladiator].AddLevelData(1, 2, 0, 0, 10, 0, 4, 0.6f, 0, 0);
         unitData[(int)UnitId.Gladiator].AddLevelData(2, 3, 0, 0, 14, 0, 4, 0.6f, 0, 0);
         unitData[(int)UnitId.Gladiator].AddLevelData(3, 4, 0, 0, 18, 0, 4, 0.6f, 0, 0);
@@ -54,7 +54,7 @@ class UnitDatabase
         unitData[(int)UnitId.Gladiator].AddLevelData(17, 18, 1, 1, 74, 0, 5, 0.8f, 1, 0);
         unitData[(int)UnitId.Gladiator].AddLevelData(18, 19, 1, 1, 78, 0, 5, 0.8f, 1, 0);
 
-        unitData.Add(new UnitBaseData(UnitId.Archer, "Archer", "활을 쏘는 궁수이다. 원거리 전투에 효과적이다.", new TimeSpan(0, 1, 30), 250, 18));
+        unitData.Add(new UnitBaseData(UnitId.Archer, "Archer", "활을 쏘는 궁수이다. 원거리 전투에 효과적이다.", new TimeSpan(0, 1, 30), 250, 1, 18));
         unitData[(int)UnitId.Archer].AddLevelData(1, 3, 0, 0, 12, 0, 3, 0.6f, 0, 0);
         unitData[(int)UnitId.Archer].AddLevelData(2, 4, 0, 0, 15, 0, 3, 0.6f, 0, 0);
         unitData[(int)UnitId.Archer].AddLevelData(3, 4, 0, 0, 18, 0, 3, 0.6f, 0, 0);
@@ -74,7 +74,7 @@ class UnitDatabase
         unitData[(int)UnitId.Archer].AddLevelData(17, 15, 1, 0, 60, 0, 4, 1f, 1, 0);
         unitData[(int)UnitId.Archer].AddLevelData(18, 16, 1, 0, 63, 0, 4, 1f, 1, 0);
 
-        unitData.Add(new UnitBaseData(UnitId.Paladin, "Paladin", "망치를 들고있는 팔라딘이다. 마법 방어력이 뛰어나다", new TimeSpan(0, 5, 0), 500, 18));
+        unitData.Add(new UnitBaseData(UnitId.Paladin, "Paladin", "망치를 들고있는 팔라딘이다. 마법 방어력이 뛰어나다", new TimeSpan(0, 5, 0), 500, 1, 18));
         unitData[(int)UnitId.Paladin].AddLevelData(1, 3, 0, 0, 30, 0, 3, 0.8f, 0, 0);
         unitData[(int)UnitId.Paladin].AddLevelData(2, 4, 1, 0, 33, 0, 3, 0.8f, 0, 0);
         unitData[(int)UnitId.Paladin].AddLevelData(3, 4, 1, 0, 36, 0, 3, 0.8f, 0, 0);
@@ -94,7 +94,7 @@ class UnitDatabase
         unitData[(int)UnitId.Paladin].AddLevelData(17, 21, 4, 2, 93, 0, 5, 1f, 1, 0);
         unitData[(int)UnitId.Paladin].AddLevelData(18, 23, 4, 2, 98, 0, 5, 1f, 1, 0);
 
-        unitData.Add(new UnitBaseData(UnitId.Mage, "Mage", "마법을 사용하는 마법사이다. 강력한 화염마법을 구사한다.", new TimeSpan(0, 10, 0), 750, 18));
+        unitData.Add(new UnitBaseData(UnitId.Mage, "Mage", "마법을 사용하는 마법사이다. 강력한 화염마법을 구사한다.", new TimeSpan(0, 10, 0), 750, 1, 18));
         unitData[(int)UnitId.Mage].AddLevelData(1, 5, 0, 0, 16, 0, 2, 0.6f, 0, 0);
         unitData[(int)UnitId.Mage].AddLevelData(2, 7, 0, 0, 18, 0, 2, 0.6f, 0, 0);
         unitData[(int)UnitId.Mage].AddLevelData(3, 9, 0, 0, 20, 0, 2, 0.6f, 0, 0);
@@ -114,7 +114,7 @@ class UnitDatabase
         unitData[(int)UnitId.Mage].AddLevelData(17, 43, 0, 2, 48, 0, 2, 1.4f, 0, 0);
         unitData[(int)UnitId.Mage].AddLevelData(18, 46, 0, 3, 50, 0, 2, 1.4f, 0, 0);
 
-        unitData.Add(new UnitBaseData(UnitId.Knight, "Knight", "기동력이 뛰어난 기사이다. 근접 전투와 체력이 뛰어나다.", new TimeSpan(0, 15, 0), 1000, 18));
+        unitData.Add(new UnitBaseData(UnitId.Knight, "Knight", "기동력이 뛰어난 기사이다. 근접 전투와 체력이 뛰어나다.", new TimeSpan(0, 15, 0), 1000, 1, 18));
         unitData[(int)UnitId.Knight].AddLevelData(1, 8, 0, 0, 46, 0, 5, 1f, 1, 0);
         unitData[(int)UnitId.Knight].AddLevelData(2, 10, 0, 0, 51, 0, 5, 1f, 1, 0);
         unitData[(int)UnitId.Knight].AddLevelData(3, 12, 0, 0, 56, 0, 5, 1f, 1, 0);
@@ -134,7 +134,7 @@ class UnitDatabase
         unitData[(int)UnitId.Knight].AddLevelData(17, 40, 12, 2, 150, 0, 6, 1.2f, 1, 0);
         unitData[(int)UnitId.Knight].AddLevelData(18, 42, 12, 3, 159, 0, 6, 1.2f, 1, 0);
 
-        unitData.Add(new UnitBaseData(UnitId.None, "None", "", new TimeSpan(0, 0, 0), 0, 0));
+        unitData.Add(new UnitBaseData(UnitId.None, "None", "", new TimeSpan(0, 0, 0), 0, 0, 0));
     }
 
     public UnitBaseData GetUnitData(int Id)
@@ -159,6 +159,7 @@ public class UnitBaseData
     int maxLevel;
     TimeSpan createTime;
     int cost;
+    int attackRange;
     List<UnitLevelData> unitData;
 
     public UnitId ID { get { return Id; } }
@@ -167,6 +168,7 @@ public class UnitBaseData
     public int MaxLevel { get { return maxLevel; } }
     public TimeSpan CreateTime { get { return createTime; } }
     public int Cost { get { return cost; } }
+    public int AttackRange { get { return attackRange; } }
     public List<UnitLevelData> UnitData { get { return unitData; } }
 
     public UnitBaseData()
@@ -177,10 +179,11 @@ public class UnitBaseData
         maxLevel = 0;
         createTime = new TimeSpan();
         cost = 0;
+        attackRange = 0;
         unitData = new List<UnitLevelData>();
     }
 
-    public UnitBaseData(UnitId newId, string newName, string newExplanation, TimeSpan newCreateTime, int newCost, int newMaxLevel)
+    public UnitBaseData(UnitId newId, string newName, string newExplanation, TimeSpan newCreateTime, int newCost, int newAttackRange, int newMaxLevel)
     {
         Id = newId;
         name = newName;
@@ -188,6 +191,7 @@ public class UnitBaseData
         maxLevel = newMaxLevel;
         createTime = newCreateTime;
         cost = newCost;
+        attackRange = newAttackRange;
         unitData = new List<UnitLevelData>();
     }
 
@@ -262,5 +266,10 @@ public class UnitLevelData
         attackSpeed = newAttackSpeed;
         healthRegeneration = newHealthRegeneration;
         manaRegeneration = newManaRegeneration;
+    }
+
+    public void Damaged(int damage)
+    {
+        health -= damage;
     }
 }

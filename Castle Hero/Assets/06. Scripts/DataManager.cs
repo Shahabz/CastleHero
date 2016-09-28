@@ -244,6 +244,12 @@ class DataManager : MonoBehaviour
         }
     }
 
+    public void SetMyPosition(Position position)
+    {
+        xPos = position.X;
+        yPos = position.Y;
+    }
+
     public void SetPlaceData(Place[] placeData)
     {
         worldMap = placeData;

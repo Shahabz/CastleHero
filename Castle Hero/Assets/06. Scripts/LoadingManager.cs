@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class LoadingManager : MonoBehaviour
 {
-    public const int waitData = 11;
+    public const int waitData = 12;
     public const int battleData = 1;
 
     public bool[] dataCheck;
@@ -92,6 +92,7 @@ public class LoadingManager : MonoBehaviour
         StartCoroutine(LoadStateData());
         StartCoroutine(LoadBuildData());
         StartCoroutine(LoadUnitCreateData());
+        StartCoroutine(LoadMyPositionData());
         StartCoroutine(LoadPlaceData());
         StartCoroutine(LoadingEndCheck(GameManager.Scene.Wait));
     }
@@ -116,7 +117,7 @@ public class LoadingManager : MonoBehaviour
         InitializeDataCheck();
         loadEnd = false;
 
-        StartCoroutine(LoadEnemyUnitData());
+        StartCoroutine(LoadEnemyUnitDataRequest());
         StartCoroutine(LoadingEndCheck(GameManager.Scene.Battle));
     }
 
@@ -210,6 +211,15 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
+    public IEnumerator LoadMyPositionData()
+    {
+        while (!dataCheck[(int)ServerPacketId.MyPositionData - 4])
+        {
+            networkManager.DataRequest(ClientPacketId.MyPositionDataRequest);
+            yield return new WaitForSeconds(1f);
+        }
+    }
+
     public IEnumerator LoadPlaceData()
     {
         while (!dataCheck[(int)ServerPacketId.PlaceData - 4])
@@ -219,11 +229,11 @@ public class LoadingManager : MonoBehaviour
         }
     }
 
-    public IEnumerator LoadEnemyUnitData()
+    public IEnumerator LoadEnemyUnitDataRequest()
     {
-        while (!dataCheck[(int)ServerPacketId.EnemyUnitData - 16])
+        while (!dataCheck[(int)ServerPacketId.EnemyUnitData - 17])
         {
-            networkManager.DataRequest(ClientPacketId.EnemyUnitDataRequest);
+            networkManager.EnemyUnitDataRequest(battleManager.GetAttackPos());
             yield return new WaitForSeconds(1f);
         }
     }
@@ -272,6 +282,7 @@ public class LoadingManager : MonoBehaviour
         else if (level == (int)GameManager.Scene.Battle)
         {
             battleManager.SetSpawnPoint();
+            battleManager.SetBattleStage();
         }
     }
 }

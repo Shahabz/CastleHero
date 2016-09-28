@@ -52,8 +52,10 @@ public class DataHandler
         m_notifier.Add((int)ClientPacketId.UnitCreate, UnitCreate);
         m_notifier.Add((int)ClientPacketId.UnitCreateDataRequest, UnitCreateDataRequest);
         m_notifier.Add((int)ClientPacketId.UnitCreateComplete, UnitCreateComplete);
+        m_notifier.Add((int)ClientPacketId.MyPositionDataRequest, MyPositionDataRequest);
         m_notifier.Add((int)ClientPacketId.PlaceDataRequest, PlaceDataRequest);
         m_notifier.Add((int)ClientPacketId.EnemyUnitNumRequest, EnemyUnitNumRequest);
+        m_notifier.Add((int)ClientPacketId.EnemyUnitDataRequest, EnemyUnitDataRequest);
 
         Thread handleThread = new Thread(new ThreadStart(DataHandle));
         handleThread.Start();
@@ -502,7 +504,7 @@ public class DataHandler
 
     public ServerPacketId UnitCreateDataRequest(byte[] data)
     {
-        Console.Write("유닛생산 데이터 요청");
+        Console.WriteLine("유닛생산 데이터 요청");
         string Id = LoginUser[tcpPacket.client];
 
         UserData newUserData = database.GetAccountData(Id);
@@ -540,6 +542,22 @@ public class DataHandler
         return ServerPacketId.None;
     }
 
+    public ServerPacketId MyPositionDataRequest(byte[] data)
+    {
+        Console.WriteLine("자기성 위치 데이터 요청");
+
+        string Id = LoginUser[tcpPacket.client];
+
+        UserData newUserData = database.GetAccountData(Id);
+
+        Position positionData = new Position(newUserData.XPos, newUserData.YPos);
+        PositionDataPacket positionDataPacket = new PositionDataPacket(positionData);
+
+        msg = CreatePacket(positionDataPacket, ServerPacketId.MyPositionData);
+
+        return ServerPacketId.MyPositionData;
+    }
+
     public ServerPacketId PlaceDataRequest(byte[] data)
     {
         Console.WriteLine("성 위치 데이터 요청");
@@ -570,11 +588,28 @@ public class DataHandler
 
     public ServerPacketId EnemyUnitDataRequest(byte[] data)
     {
-        if ()
-        {
+        Console.WriteLine("적 유닛 데이터 요청");
 
+        PositionDataPacket enemyUnitDataRequestPacket = new PositionDataPacket(data);
+        Position position = enemyUnitDataRequestPacket.GetData();
+
+        UnitData unitData = new UnitData();
+
+        int mapIndex = position.X * 1000 + position.Y;
+
+        Place place = database.GetPlaceData(mapIndex);
+
+        if (place.Type == (int)PlaceType.Castle)
+        {
+            UserData newUserData = database.GetAccountData(place.ID);
+            unitData = new UnitData(newUserData.UnitKind, newUserData.Unit);
         }
 
+        UnitDataPacket unitDataPacket = new UnitDataPacket(unitData);
+
+        msg = CreatePacket(unitDataPacket, ServerPacketId.EnemyUnitData);
+
+        Console.WriteLine(msg[2]);
         return ServerPacketId.EnemyUnitData;
     }
 
